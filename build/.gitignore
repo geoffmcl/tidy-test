@@ -4,4 +4,11 @@ Makefile
 bldlog-1.txt
 cmake_install.cmake
 tidy-test
-
+*.vcxproj
+*.filters
+*.user
+Debug/*
+Release/*
+Win32/*
+*.dir/*
+*.sln
