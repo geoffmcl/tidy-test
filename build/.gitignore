@@ -1,0 +1,7 @@
+CMakeCache.txt
+CMakeFiles/*
+Makefile
+bldlog-1.txt
+cmake_install.cmake
+tidy-test
+
