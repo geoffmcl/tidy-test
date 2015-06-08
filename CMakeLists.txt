@@ -1,4 +1,4 @@
-
+# tidy-test - root CMakeLists.txt
 # CMakeLists.txt, generated gencmake.pl, on 2015/05/20 11:53:57
 cmake_minimum_required( VERSION 2.8.8 )
 
@@ -110,5 +110,19 @@ endif ()
 # deal with install, if any...
 #install( TARGETS ${name} DESTINATION bin )
 
+set(name tidy-opts)
+set(dir src)
+set(${name}_SRCS
+    ${dir}/${name}.c
+    )
+add_executable( ${name} ${${name}_SRCS} )
+if (add_LIBS)
+    target_link_libraries( ${name} ${add_LIBS} )
+endif ()
+if (MSVC)
+    set_target_properties( ${name} PROPERTIES DEBUG_POSTFIX d )
+endif ()
+# deal with install, if any...
+#install( TARGETS ${name} DESTINATION bin )
 
 # eof
