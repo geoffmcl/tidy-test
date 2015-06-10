@@ -1302,6 +1302,7 @@ int main( int argc, char** argv )
         else
         {
             htmlfil = "stdin";
+            printf("Tidy parse stdin... waiting input...\n");
             status = tidyParseStdin( tdoc );
         }
 
