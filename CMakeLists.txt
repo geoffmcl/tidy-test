@@ -73,21 +73,19 @@ endif()
 #################################################
 ##### LIBRARIES 1 #####
 #################################################
-if (MSVC)
-    set(name utillib)
-    set(dir src/utils)
-    include_directories( ${dir} )
-    set(${name}_SRCS ${dir}/sprtf.c)
-    set(${name}_HDRS ${dir}/sprtf.h)
-    add_library( ${name} ${${name}_SRCS} ${${name}_HDRS} )
-    list(APPEND add_LIBS ${name})
-    # deal with install, if any...
-    #install( TARGETS ${name}
-    #    RUNTIME DESTINATION bin
-    #    LIBRARY DESTINATION lib
-    #    ARCHIVE DESTINATION lib )
-    #install(FILES ${${name}_HDRS} DESTINATION include)
-endif()
+set(name utillib)
+set(dir src/utils)
+include_directories( ${dir} )
+set(${name}_SRCS ${dir}/sprtf.c)
+set(${name}_HDRS ${dir}/sprtf.h)
+add_library( ${name} ${${name}_SRCS} ${${name}_HDRS} )
+list(APPEND add_LIBS ${name})
+# deal with install, if any...
+#install( TARGETS ${name}
+#    RUNTIME DESTINATION bin
+#    LIBRARY DESTINATION lib
+#    ARCHIVE DESTINATION lib )
+#install(FILES ${${name}_HDRS} DESTINATION include)
 
 #################################################
 ##### EXECUTABLE 1 #####
