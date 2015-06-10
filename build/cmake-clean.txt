@@ -1,3 +1,5 @@
 bldlog-1.txt
 tidy-test
+libutillib.a
+tidy-opts
 
