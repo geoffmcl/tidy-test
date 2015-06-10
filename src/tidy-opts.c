@@ -306,7 +306,7 @@ int show_sink()
 static size_t total_mem = 0;
 static size_t max_mem = 0;
 static size_t max_max_mem = 0;
-
+static size_t largest_mem = 0;
 typedef struct tagMMSTATS {
     void *link;
     void *mem;
@@ -328,6 +328,8 @@ void add_to_stats( void *vp, size_t size, Bool realloc, void *nvp )
                 pmm->resized = yes;
                 pmm->nmem = nvp;
                 pmm->nsize = size;
+                if (size > largest_mem)
+                    largest_mem = size;
                 total_mem += size - pmm->size;
                 max_mem += size - pmm->size;
                 if (max_mem > max_max_mem)
@@ -339,6 +341,8 @@ void add_to_stats( void *vp, size_t size, Bool realloc, void *nvp )
         if ((pmm->mem == vp)||(pmm->nmem == nvp)) {
             pmm->resized = yes;
             pmm->nmem = nvp;
+            if (size > largest_mem)
+                largest_mem = size;
             pmm->nsize = size;
             total_mem += size - pmm->size;
             max_mem += size - pmm->size;
@@ -356,6 +360,8 @@ void add_to_stats( void *vp, size_t size, Bool realloc, void *nvp )
         memset(nmm,0,sizeof(MMSTATS));
         nmm->mem = vp;
         nmm->size = size;
+        if (size > largest_mem)
+            largest_mem = size;
         total_mem += size;
         max_mem += size;
         if (max_mem > max_max_mem)
@@ -432,7 +438,8 @@ void free_stats()
         pmm = (PMMSTATS)vp;
         cnt++;
     }
-    SPRTF("%s: %d allocations, total mem %d, max mem %d\n", module, cnt, (int)total_mem, (int)max_max_mem);
+    SPRTF("%s: %d allocations, total mem %d, max mem %d, largest %d\n", module, cnt, (int)total_mem, (int)max_max_mem,
+        (int)largest_mem);
 }
 
 /////////////////////////////////////////////////////////////////////////
@@ -453,7 +460,7 @@ void * TIDY_CALL MyAllocator_alloc(TidyAllocator *base, size_t nBytes)
     if (!vp) {
         self->base.vtbl->panic(base,"Memory FAILED!");
     }
-    SPRTF("Allocate: %p, size %d\n", vp, (int)nBytes);
+    SPRTF("    Allocate: %p, size %d\n", vp, (int)nBytes);
     add_to_stats( vp, nBytes, no, 0 );
     return vp;
 }
@@ -466,7 +473,7 @@ void * TIDY_CALL MyAllocator_realloc(TidyAllocator *base, void *block, size_t nB
         self->base.vtbl->panic(base,"Memory FAILED!");
     }
     if (block) {
-        SPRTF("Reallocate: %p, from %p, size %d\n", vp, block, (int)nBytes);
+        SPRTF("    Reallocate: %p, from %p, size %d\n", vp, block, (int)nBytes);
         add_to_stats( block, nBytes, yes, vp );
     } else {
         SPRTF("[Re]allocate: %p, from NULL, size %d\n", vp, (int)nBytes);
@@ -479,9 +486,9 @@ void TIDY_CALL MyAllocator_free(TidyAllocator *base, void *block)
     MyAllocator *self = (MyAllocator*)base;
     if (block) {
         size_t size = free_block( block );
-        SPRTF("Free: %p, size %d\n", block, (int)size );
+        SPRTF("        Free: %p, size %d\n", block, (int)size );
     } else {
-        SPRTF("Free: NULL\n" );
+        SPRTF("        Free: NULL\n" );
     }
     free(block);
 }
@@ -510,24 +517,29 @@ void test_with_allocator()
     TidyDoc doc = 0;
     TidyOptionId id;
     Bool done;
-    int res;
+    int res, c;
+    size_t ii,len;
 
     SPRTF("%s: Test 2: Set own allocator\n", module );
     memset(&allocator,0,sizeof(MyAllocator));
     allocator.base.vtbl = &MyAllocatorVtbl;
     //...initialise allocator specific state...
+    SPRTF("%s: Do intital 'document' creation...\n", module);
     doc = tidyCreateWithAllocator(&allocator.base);
     if (!doc) {
         SPRTF("Failed tidyCreateWithAllocator!\n");
         goto exit;
     }
+    SPRTF("%s: Allocate two buffers, err and out buffer...\n", module);
     tidyBufInitWithAllocator( &m_errbuf, &allocator.base);  // tidyBufInit( &m_errbuf );
     tidyBufInitWithAllocator( &m_outbuf, &allocator.base);  // tidyBufInit( &m_errbuf );
+    SPRTF("%s: Set error buffer...\n", module );
     res = tidySetErrorBuffer( doc, &m_errbuf );
     if ( !(res == 0) ) {    // Capture diagnostics
         SPRTF("Failed to set error buffer! %d\n", res);
         goto exit;
     }
+    SPRTF("%s: Set option '%s: yes'\n", module, opt1);
     id = tidyOptGetIdForName(opt1);
     if (id < N_TIDY_OPTIONS) {
         done = tidyOptSetInt(doc, id, yes);
@@ -539,17 +551,83 @@ void test_with_allocator()
         SPRTF("Failed to set option bool for %s!\n", opt1);
         goto exit;
     }
-    res = tidyParseString( doc, html1 );
-    res = tidyCleanAndRepair( doc );
-    res = tidyRunDiagnostics( doc );
-    res = tidyReportDoctype( doc );
-    res = tidySaveBuffer( doc, &m_outbuf );
 
-exit:    
+    res = tidyParseString( doc, html1 );
+    SPRTF("%s: Results from tidyParseString(...) = %d\n", module, res );
+    if (m_errbuf.bp && strlen((const char *)m_errbuf.bp)) {
+        len = strlen((const char *)m_errbuf.bp);
+        while (len) {
+            len--;
+            c = m_errbuf.bp[len];
+            if (c > ' ')
+                break;
+            m_errbuf.bp[len] = 0;
+        }
+        SPRTF("errbuf: '%s'\n", m_errbuf.bp);
+        tidyBufClear( &m_errbuf );
+    }
+
+    res = tidyCleanAndRepair( doc );
+    SPRTF("%s: Results from tidyCleanAndRepair(...) = %d\n", module, res );
+    if (m_errbuf.bp && strlen((const char *)m_errbuf.bp)) {
+        SPRTF("errbuf: '%s'\n", m_errbuf.bp);
+        len = strlen((const char *)m_errbuf.bp);
+        while (len) {
+            len--;
+            c = m_errbuf.bp[len];
+            if (c > ' ')
+                break;
+            m_errbuf.bp[len] = 0;
+        }
+        SPRTF("errbuf: '%s'\n", m_errbuf.bp);
+        tidyBufClear( &m_errbuf );
+    }
+    res = tidyRunDiagnostics( doc );
+    SPRTF("%s: Results from tidyRunDiagnostics(...) = %d\n", module, res );
+    if (m_errbuf.bp && strlen((const char *)m_errbuf.bp)) {
+        len = strlen((const char *)m_errbuf.bp);
+        while (len) {
+            len--;
+            c = m_errbuf.bp[len];
+            if (c > ' ')
+                break;
+            m_errbuf.bp[len] = 0;
+        }
+        SPRTF("errbuf: '%s'\n", m_errbuf.bp);
+        tidyBufClear( &m_errbuf );
+    }
+    res = tidyReportDoctype( doc );
+    SPRTF("%s: Results from tidyReportDoctype(...) = %d\n", module, res );
+    if (m_errbuf.bp && strlen((const char *)m_errbuf.bp)) {
+        len = strlen((const char *)m_errbuf.bp);
+        while (len) {
+            len--;
+            c = m_errbuf.bp[len];
+            if (c > ' ')
+                break;
+            m_errbuf.bp[len] = 0;
+        }
+        SPRTF("errbuf: '%s'\n", m_errbuf.bp);
+        tidyBufClear( &m_errbuf );
+    }
+    res = tidySaveBuffer( doc, &m_outbuf );
+    SPRTF("%s: Results from tidySaveBuffer(...) = %d\n", module, res );
+    if (m_errbuf.bp && strlen((const char *)m_errbuf.bp)) {
+        len = strlen((const char *)m_errbuf.bp);
+        while (len) {
+            len--;
+            c = m_errbuf.bp[len];
+            if (c > ' ')
+                break;
+            m_errbuf.bp[len] = 0;
+        }
+        SPRTF("errbuf: '%s'\n", m_errbuf.bp);
+        tidyBufClear( &m_errbuf );
+    }
+
     SPRTF("Input:  '%s'\n", html1 );
     if (m_outbuf.bp) {
-        size_t ii,len = strlen((const char *)m_outbuf.bp);
-        int c;
+        len = strlen((const char *)m_outbuf.bp);
         for (ii = 0; ii < len; ii++) {
             c = m_outbuf.bp[ii];
             if (c < ' ')
@@ -566,6 +644,7 @@ exit:
     } else {
         SPRTF("Output: '%s'\n", "HUH! none???" );
     }
+exit:    
     tidyBufFree( &m_errbuf );
     tidyBufFree( &m_outbuf );
     tidyRelease(doc);
