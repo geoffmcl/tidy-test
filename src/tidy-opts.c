@@ -10,6 +10,8 @@
 #include <string.h> // for strdup(), ...
 #include <tidy.h>
 #include <buffio.h>
+#include "sprtf.h"
+
 
 /*\
  *
@@ -25,6 +27,10 @@
 #define MEOL "\n"
 #endif
 #endif
+#ifdef SPRTF
+#define SPTRF SPRTF
+#endif
+
 
 static const char *module = "tidy-opts";
 
@@ -32,11 +38,13 @@ static const char *usr_input = 0;
 
 void give_help( char *name )
 {
-    printf("%s: usage: [options] [usr_input]\n", module);
-    printf("Options:\n");
-    printf(" --help  (-h or -?) = This help and exit(2)\n");
-    printf(" It is only to fetch and display the tidy library options in\n");
-    printf(" in a sink.\n");
+    SPRTF("%s: usage: [options] [usr_input]\n", module);
+    SPRTF("Options:\n");
+    SPRTF(" --help  (-h or -?) = This help and exit(2)\n");
+    SPRTF(" Test 1: Fetch and display the tidy library options in\n");
+    SPRTF(" a sink, and after setting one.\n");
+    SPRTF(" Test 2: Set an own 'allocator' and use to create and parse a\n");
+    SPRTF(" document\n");
 }
 
 int parse_args( int argc, char **argv )
@@ -59,20 +67,20 @@ int parse_args( int argc, char **argv )
                 break;
             // TODO: Other arguments
             default:
-                printf("%s: Unknown argument '%s'. Tyr -? for help...\n", module, arg);
+                SPRTF("%s: Unknown argument '%s'. Tyr -? for help...\n", module, arg);
                 return 1;
             }
         } else {
             // bear argument
             if (usr_input) {
-                printf("%s: Already have input '%s'! What is this '%s'?\n", module, usr_input, arg );
+                SPRTF("%s: Already have input '%s'! What is this '%s'?\n", module, usr_input, arg );
                 return 1;
             }
             usr_input = strdup(arg);
         }
     }
     //if (!usr_input) {
-    //    printf("%s: No user input found in command!\n", module);
+    //    SPRTF("%s: No user input found in command!\n", module);
     //    return 1;
     //}
     return 0;
@@ -271,7 +279,7 @@ static TidyOutputSink sink;
 void show_libVersion()
 {
     ctmbstr s = tidyLibraryVersion();
-    printf("Using HTML Tidy library version %s\n", s);
+    SPRTF("Using HTML Tidy library version %s\n", s);
 }
 
 int show_sink()
@@ -289,23 +297,300 @@ int show_sink()
         const char *err2 = "Oops! internal error: tidyInitSink() FAILED" MEOL;
         tidyBufAppend(&cfgbuf,(void *)err2,strlen(err2));
     }
-    printf("%s", cfgbuf.bp);
+    SPRTF("%s", cfgbuf.bp);
     return iret;
 }
+
+////////////////////////////////////////////////////////////////////////
+//// Memory Stats
+static size_t total_mem = 0;
+static size_t max_mem = 0;
+static size_t max_max_mem = 0;
+
+typedef struct tagMMSTATS {
+    void *link;
+    void *mem;
+    size_t size;
+    Bool freed;
+    Bool resized;
+    size_t nsize;
+    void *nmem;
+}MMSTATS, *PMMSTATS;
+
+static MMSTATS mmstats = { 0 };
+
+void add_to_stats( void *vp, size_t size, Bool realloc, void *nvp )
+{
+    PMMSTATS pmm = &mmstats;
+    if (realloc) {
+        while (pmm->link) {
+            if ((pmm->mem == vp)||(pmm->nmem == nvp)) {
+                pmm->resized = yes;
+                pmm->nmem = nvp;
+                pmm->nsize = size;
+                total_mem += size - pmm->size;
+                max_mem += size - pmm->size;
+                if (max_mem > max_max_mem)
+                    max_max_mem = max_mem;
+                return;
+            }
+            pmm = (PMMSTATS)pmm->link;
+        }
+        if ((pmm->mem == vp)||(pmm->nmem == nvp)) {
+            pmm->resized = yes;
+            pmm->nmem = nvp;
+            pmm->nsize = size;
+            total_mem += size - pmm->size;
+            max_mem += size - pmm->size;
+            if (max_mem > max_max_mem)
+                max_max_mem = max_mem;
+            return;
+        }
+        SPRTF("%s: REAllocation %p or %p NOT found!\n", module, vp, nvp );
+    } else {
+        PMMSTATS nmm = (PMMSTATS)malloc(sizeof(MMSTATS));
+        if (!nmm) {
+            SPRTF("%s: UGH! Memory FAILED on %d bytes!\n", module, (int)(sizeof(MMSTATS)) );
+            exit(2);
+        }
+        memset(nmm,0,sizeof(MMSTATS));
+        nmm->mem = vp;
+        nmm->size = size;
+        total_mem += size;
+        max_mem += size;
+        if (max_mem > max_max_mem)
+            max_max_mem = max_mem;
+        // get to last link
+        while (pmm->link) {
+            pmm = (PMMSTATS) pmm->link;
+        }
+        pmm->link = nmm;
+    }
+}
+
+size_t free_block( void *vp )
+{
+    PMMSTATS pmm = &mmstats;
+    while (pmm->link) {
+        if ((pmm->mem == vp) || ((pmm->nmem == vp)&&(pmm->resized))) {
+            if (!pmm->freed) {
+                pmm->freed = yes;
+                if (pmm->resized) {
+                    if (max_mem > pmm->nsize)
+                        max_mem -= pmm->nsize;
+                    else
+                        max_mem = 0;
+                    return pmm->nsize;
+                } else {
+                    if (max_mem > pmm->size)
+                        max_mem -= pmm->size;
+                    else
+                        max_mem = 0;
+                    return pmm->size;
+                }
+            } else {
+                SPRTF("%s: block %p already marked free. Maybe reuse...\n", module, vp);
+            }
+        } 
+        pmm = (PMMSTATS) pmm->link;
+    }
+    if ((pmm->mem == vp) || ((pmm->nmem == vp)&&(pmm->resized))) {
+        if (!pmm->freed) {
+            pmm->freed = yes;
+            if (pmm->resized) {
+                if (max_mem > pmm->nsize)
+                    max_mem -= pmm->nsize;
+                else
+                    max_mem = 0;
+                return pmm->nsize;
+            } else {
+                if (max_mem > pmm->size)
+                    max_mem -= pmm->size;
+                else
+                    max_mem = 0;
+                return pmm->size;
+            }
+        } else {
+            SPRTF("%s: block %p already marked free. Maybe reuse...\n", module, vp);
+        }
+    } 
+    SPRTF("%s: Block freed not in stats %p!\n", module, vp );
+    return 0;
+}
+
+void free_stats() 
+{
+    PMMSTATS pmm = &mmstats;
+    int cnt = 0;
+    while (pmm->link) {
+        void *vp = pmm->link;
+        if (cnt) {
+            if (!pmm->freed)
+                SPRTF("%s: allocation %p (%p) NOT freed\n", module, pmm->mem, pmm->nmem);
+            free(pmm);
+        }
+        pmm = (PMMSTATS)vp;
+        cnt++;
+    }
+    SPRTF("%s: %d allocations, total mem %d, max mem %d\n", module, cnt, (int)total_mem, (int)max_max_mem);
+}
+
+/////////////////////////////////////////////////////////////////////////
+//// Experiment with supplying own allocator
+
+typedef struct _MyAllocator {
+    TidyAllocator base;
+    //   ...other custom allocator state...
+} MyAllocator;
+ 
+
+//void * MyAllocator_alloc(TidyAllocator *base, void *block, size_t nBytes)
+void * TIDY_CALL MyAllocator_alloc(TidyAllocator *base, size_t nBytes)
+{
+    MyAllocator *self = (MyAllocator*)base;
+    //   ...
+    void *vp = malloc(nBytes);
+    if (!vp) {
+        self->base.vtbl->panic(base,"Memory FAILED!");
+    }
+    SPRTF("Allocate: %p, size %d\n", vp, (int)nBytes);
+    add_to_stats( vp, nBytes, no, 0 );
+    return vp;
+}
+void * TIDY_CALL MyAllocator_realloc(TidyAllocator *base, void *block, size_t nBytes)
+{
+    MyAllocator *self = (MyAllocator*)base;
+    //   ...
+    void *vp = realloc(block,nBytes);
+    if (!vp) {
+        self->base.vtbl->panic(base,"Memory FAILED!");
+    }
+    if (block) {
+        SPRTF("Reallocate: %p, from %p, size %d\n", vp, block, (int)nBytes);
+        add_to_stats( block, nBytes, yes, vp );
+    } else {
+        SPRTF("[Re]allocate: %p, from NULL, size %d\n", vp, (int)nBytes);
+        add_to_stats( vp, nBytes, no, 0 );
+    }
+    return vp;
+}
+void TIDY_CALL MyAllocator_free(TidyAllocator *base, void *block)
+{
+    MyAllocator *self = (MyAllocator*)base;
+    if (block) {
+        size_t size = free_block( block );
+        SPRTF("Free: %p, size %d\n", block, (int)size );
+    } else {
+        SPRTF("Free: NULL\n" );
+    }
+    free(block);
+}
+void TIDY_CALL MyAllocator_panic(TidyAllocator *base, ctmbstr msg)
+{
+    SPRTF("Critical Error: %s\n", msg);
+    exit(2);
+}
+
+static const TidyAllocatorVtbl MyAllocatorVtbl = {
+     MyAllocator_alloc,
+     MyAllocator_realloc,
+     MyAllocator_free,
+     MyAllocator_panic
+};
+
+static MyAllocator allocator;
+static TidyDoc doc;
+static TidyBuffer m_errbuf;
+static TidyBuffer m_outbuf;
+static const char *opt1 = "show-body-only";
+static const char *html1 = "<p>hello<em> world</em></p>";
+
+void test_with_allocator()
+{
+    TidyDoc doc = 0;
+    TidyOptionId id;
+    Bool done;
+    int res;
+
+    SPRTF("%s: Test 2: Set own allocator\n", module );
+    memset(&allocator,0,sizeof(MyAllocator));
+    allocator.base.vtbl = &MyAllocatorVtbl;
+    //...initialise allocator specific state...
+    doc = tidyCreateWithAllocator(&allocator.base);
+    if (!doc) {
+        SPRTF("Failed tidyCreateWithAllocator!\n");
+        goto exit;
+    }
+    tidyBufInitWithAllocator( &m_errbuf, &allocator.base);  // tidyBufInit( &m_errbuf );
+    tidyBufInitWithAllocator( &m_outbuf, &allocator.base);  // tidyBufInit( &m_errbuf );
+    res = tidySetErrorBuffer( doc, &m_errbuf );
+    if ( !(res == 0) ) {    // Capture diagnostics
+        SPRTF("Failed to set error buffer! %d\n", res);
+        goto exit;
+    }
+    id = tidyOptGetIdForName(opt1);
+    if (id < N_TIDY_OPTIONS) {
+        done = tidyOptSetInt(doc, id, yes);
+        if (!done) {
+            SPRTF("Failed to set option bool for %s!\n", opt1);
+            goto exit;
+        }
+    } else {
+        SPRTF("Failed to set option bool for %s!\n", opt1);
+        goto exit;
+    }
+    res = tidyParseString( doc, html1 );
+    res = tidyCleanAndRepair( doc );
+    res = tidyRunDiagnostics( doc );
+    res = tidyReportDoctype( doc );
+    res = tidySaveBuffer( doc, &m_outbuf );
+
+exit:    
+    SPRTF("Input:  '%s'\n", html1 );
+    if (m_outbuf.bp) {
+        size_t ii,len = strlen((const char *)m_outbuf.bp);
+        int c;
+        for (ii = 0; ii < len; ii++) {
+            c = m_outbuf.bp[ii];
+            if (c < ' ')
+                m_outbuf.bp[ii] = ' ';
+        }
+        while (len) {
+            len--;
+            c = m_outbuf.bp[len];
+            if (c > ' ')
+                break;
+            m_outbuf.bp[len] = 0;
+        }
+        SPRTF("Output: '%s'\n", m_outbuf.bp );
+    } else {
+        SPRTF("Output: '%s'\n", "HUH! none???" );
+    }
+    tidyBufFree( &m_errbuf );
+    tidyBufFree( &m_outbuf );
+    tidyRelease(doc);
+    free_stats();
+    SPRTF("%s: Test 2: Done.\n", module );
+
+}
+
+static const char *def_log = "tempopts.txt";
 
 // main() OS entry
 int main( int argc, char **argv )
 {
     int iret = 0;
     const char *cp;
+    set_log_file((char *)def_log, 0);
     iret = parse_args(argc,argv);
     if (iret)
         return iret;
 
     show_libVersion();
 
+    SPRTF("%s: Test 1: Default options and after setting a blank string\n", module);
     if (!openTidyLib()) {
-        printf("Some problem initializing libtidy!\n");
+        SPRTF("Some problem initializing libtidy!\n");
         iret = 1;
         goto exit;
     }
@@ -324,9 +609,11 @@ int main( int argc, char **argv )
             iret = show_sink();
         }
     }
-
+    SPRTF("%s: Test 1: Done\n", module);
+    test_with_allocator();
 exit:
     closeTidyLib();
+    SPRTF("%s: All output written to '%s'\n", module, def_log);
     return iret;
 }
 
