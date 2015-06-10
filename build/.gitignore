@@ -16,3 +16,6 @@ Win32/*
 *.opensdf
 *.suo
 ipch/*
+libutillib.a
+tidy-opts
+
