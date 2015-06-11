@@ -77,8 +77,14 @@ endif()
 set(name utillib)
 set(dir src/utils)
 include_directories( ${dir} )
-set(${name}_SRCS ${dir}/sprtf.c)
-set(${name}_HDRS ${dir}/sprtf.h)
+set(${name}_SRCS 
+    ${dir}/sprtf.c
+    ${dir}/httpio.c
+    )
+set(${name}_HDRS 
+    ${dir}/sprtf.h
+    ${dir}/httpio.h
+    )
 add_library( ${name} ${${name}_SRCS} ${${name}_HDRS} )
 list(APPEND add_LIBS ${name})
 # deal with install, if any...
