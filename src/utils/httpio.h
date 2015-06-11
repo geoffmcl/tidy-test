@@ -19,6 +19,12 @@
 #endif
 #endif /* WIN32 */
 
+#ifndef MMX_BUFFER
+#define MMX_BUFFER 1024*32
+#endif
+#ifndef MMX_UNGET
+#define MMX_UNGET   64
+#endif
 // TIDY_STRUCT
 typedef struct _HTTPInputSource
 {
@@ -26,12 +32,13 @@ typedef struct _HTTPInputSource
 
     tmbstr pHostName;
     tmbstr pResource;
-    unsigned short nPort, nextBytePos, nextUnGotBytePos, nBufSize;
+    unsigned short nPort;
+    unsigned int nextBytePos, nextUnGotBytePos, nBufSize;
     SOCKET s;
-    char buffer[1024];
-    char unGetBuffer[16];
+    char recvbuffer[MMX_BUFFER];
+    char unGetBuffer[MMX_UNGET];
 
-} HTTPInputSource;
+} HTTPInputSource, *PHTTPInputSource;
 
 #ifdef __cplusplus
 extern "C" {

@@ -4,6 +4,11 @@
 
 #include <tidy.h>
 #include "httpio.h"
+#include "sprtf.h"
+
+#ifndef SPRTF
+#define SPRTF printf
+#endif
 
 ////////////////////////////////////////////////////////////////
 // some tidy internal utilities
@@ -12,7 +17,7 @@
 #define MemAlloc malloc
 #define MemFree  free
 
-#define CHKMEM(a) if (!a) printf("Memory FAILED!\n"); exit(2)
+//#define CHKMEM(a) if (!a) { SPRTF("Memory FAILED!\n"); exit(2); }
 
 /* lexer character types
 */
@@ -75,7 +80,7 @@ tmbstr tmbstrndup( ctmbstr str, uint len )
     {
         tmbstr cp = s = (tmbstr) malloc( 1+len );
         if (!cp) {
-            printf("Memory allocation FAILED on %d bytes\n", 1+len);
+            SPRTF("Memory allocation FAILED on %d bytes\n", 1+len);
             exit(2);
         }
         while ( len-- > 0 &&  (*cp++ = *str++) )
@@ -133,9 +138,9 @@ ctmbstr tmbsubstr( ctmbstr s1, ctmbstr s2 )
     }
     return NULL;
 }
+////////////////////////////////////////////////////////////////////////////////////
 
-int
-makeConnection ( HTTPInputSource *pHttp )
+int makeConnection ( HTTPInputSource *pHttp )
 {
     struct sockaddr_in sock;
     struct hostent *pHost;
@@ -227,10 +232,11 @@ int fillBuffer( HTTPInputSource *in )
 {
     if (0 < in->s)
     {
-        in->nBufSize = recv( in->s, in->buffer, sizeof( in->buffer ), 0);
+        in->nBufSize = recv( in->s, in->recvbuffer, MMX_BUFFER, 0);
         in->nextBytePos = 0;
-        if (in->nBufSize < sizeof( in->buffer ))
-            in->buffer[in->nBufSize] = '\0';
+        if (in->nBufSize < 0)
+            return in->nBufSize;    // return error
+        in->recvbuffer[in->nBufSize] = 0;
     }
     else
         in->nBufSize = 0;
@@ -241,40 +247,56 @@ int fillBuffer( HTTPInputSource *in )
 int openURL( HTTPInputSource *in, tmbstr pUrl )
 {
     int rc = -1;
+    int nbp, nbs;
 #ifdef WIN32    
     WSADATA wsaData;
-
     rc = WSAStartup( 514, &wsaData );
 #endif
-
+    // setup the input
     in->tis.getByte = (TidyGetByteFunc) HTTPGetByte; 
     in->tis.ungetByte = (TidyUngetByteFunc) HTTPUngetByte;
     in->tis.eof = (TidyEOFFunc) HTTPIsEOF;
     in->tis.sourceData = in;
     in->nextBytePos = in->nextUnGotBytePos = in->nBufSize = 0;
+
     parseURL( in, pUrl );
     if (0 == (rc = makeConnection( in )))
     {
         char ch, lastCh = '\0';
         int blanks = 0;
-
-        char *getCmd = (char *)MemAlloc( 48 + strlen( in->pResource ));
-        CHKMEM(getCmd);
+        size_t len = 48 + strlen( in->pResource );
+        char *getCmd = (char *)MemAlloc(len);
+        if (!getCmd) {
+            SPRTF("Memory FAILED on %d byes\n", (int)len);
+            return 2;
+        }
         sprintf( getCmd, "GET /%s HTTP/1.0\r\nAccept: text/html\r\n\r\n", in->pResource );
-        send( in->s, getCmd, strlen( getCmd ), 0 );
+        len = strlen(getCmd);
+        rc = send( in->s, getCmd, len, 0 );
         MemFree( getCmd );
 
+        if (rc == -1) {
+            SPRTF("send FAILED with %d!\n",rc);
+            return 2;
+        }
+        if (rc != (int)len) {
+            SPRTF("send FAILED to send req %d! got %d\n",(int)len, rc);
+            return 2;
+        }
+
+        rc = fillBuffer(in);
+
+        nbp = in->nextBytePos;
+        nbs = in->nBufSize;
         /*  skip past the header information  */
-        while (   in->nextBytePos >= in->nBufSize
-               && 0 < (rc = fillBuffer( in )))
-        {
+
+        while (  (in->nextBytePos < in->nBufSize) && (rc > 0)) {
             if (1 < blanks)
                 break;
-            for (; in->nextBytePos < sizeof( in->buffer ) 
-                   && 0 != in->buffer[ in->nextBytePos ]; 
+            for (; in->nextBytePos < MMX_BUFFER && 0 != in->recvbuffer[ in->nextBytePos ]; 
                  in->nextBytePos++ )
             {
-                ch = in->buffer[ in->nextBytePos ];
+                ch = in->recvbuffer[ in->nextBytePos ];
                 if (ch == '\r' || ch == '\n')
                 {
                     if (ch == lastCh)
@@ -295,12 +317,17 @@ int openURL( HTTPInputSource *in, tmbstr pUrl )
                 {
                     /* end of header, scan to first non-white and return */
                     while ('\0' != ch && isspace( ch ))
-                        ch = in->buffer[ ++in->nextBytePos ];
+                        ch = in->recvbuffer[ ++in->nextBytePos ];
                     break;
                 }
             }
+            if (1 < blanks)
+                break;
+            rc = fillBuffer(in);
         }
     }
+    if (rc > 0)
+        return 0;
     return rc;
 }
 
@@ -327,7 +354,7 @@ int HTTPGetByte( HTTPInputSource *source )
     }
     if (0 == source->nBufSize)
         return EndOfStream;
-    return source->buffer[ source->nextBytePos++ ];
+    return source->recvbuffer[ source->nextBytePos++ ];
 }
 
 void HTTPUngetByte( HTTPInputSource *source, uint byteValue )
@@ -355,3 +382,4 @@ Bool HTTPIsEOF( HTTPInputSource *source )
     return yes;
 }
 
+// eof
