@@ -79,12 +79,14 @@ set(dir src/utils)
 include_directories( ${dir} )
 set(${name}_SRCS 
     ${dir}/sprtf.c
-    ${dir}/httpio.c
     )
 set(${name}_HDRS 
     ${dir}/sprtf.h
-    ${dir}/httpio.h
     )
+if (WIN32)
+    list(APPEND ${name}_SRCS ${dir}/httpio.c)
+    list(APPEND ${name}_HDRS ${dir}/httpio.h)
+endif ()
 add_library( ${name} ${${name}_SRCS} ${${name}_HDRS} )
 list(APPEND add_LIBS ${name})
 # deal with install, if any...
@@ -130,34 +132,37 @@ endif ()
 # deal with install, if any...
 #install( TARGETS ${name} DESTINATION bin )
 
-set(name test71)
-set(dir src)
-set(${name}_SRCS
-    ${dir}/${name}.cxx
-    )
-add_executable( ${name} ${${name}_SRCS} )
-if (add_LIBS)
-    target_link_libraries( ${name} ${add_LIBS} )
-endif ()
-if (MSVC)
-    set_target_properties( ${name} PROPERTIES DEBUG_POSTFIX d )
-endif ()
-# deal with install, if any...
-#install( TARGETS ${name} DESTINATION bin )
+if (WIN32)
+    # TODO: Not yet ported to unix
+    set(name test71)
+    set(dir src)
+    set(${name}_SRCS
+        ${dir}/${name}.cxx
+        )
+    add_executable( ${name} ${${name}_SRCS} )
+    if (add_LIBS)
+        target_link_libraries( ${name} ${add_LIBS} )
+    endif ()
+    if (MSVC)
+        set_target_properties( ${name} PROPERTIES DEBUG_POSTFIX d )
+    endif ()
+    # deal with install, if any...
+    #install( TARGETS ${name} DESTINATION bin )
 
-set(name tidy-url)
-set(dir src)
-set(${name}_SRCS
-    ${dir}/${name}.cxx
-    )
-add_executable( ${name} ${${name}_SRCS} )
-if (add_LIBS)
-    target_link_libraries( ${name} ${add_LIBS} )
+    set(name tidy-url)
+    set(dir src)
+    set(${name}_SRCS
+        ${dir}/${name}.cxx
+        )
+    add_executable( ${name} ${${name}_SRCS} )
+    if (add_LIBS)
+        target_link_libraries( ${name} ${add_LIBS} )
+    endif ()
+    if (MSVC)
+        set_target_properties( ${name} PROPERTIES DEBUG_POSTFIX d )
+    endif ()
+    # deal with install, if any...
+    #install( TARGETS ${name} DESTINATION bin )
 endif ()
-if (MSVC)
-    set_target_properties( ${name} PROPERTIES DEBUG_POSTFIX d )
-endif ()
-# deal with install, if any...
-#install( TARGETS ${name} DESTINATION bin )
 
 # eof
