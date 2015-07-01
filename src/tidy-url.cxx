@@ -9,7 +9,7 @@
 #include <stdio.h>
 #include <string.h> // for strdup(), ...
 #include <tidy.h>
-#include <buffio.h>
+#include <tidybuffio.h>
 #include "sprtf.h"
 #include "httpio.h"
 // other includes

@@ -11,7 +11,7 @@
 
 #include <stdio.h>
 #include <tidy.h>
-#include <buffio.h>
+#include <tidybuffio.h>
 
 static const char *sample =
     "<!DOCTYPE html>\n"
