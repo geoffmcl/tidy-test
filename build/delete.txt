@@ -1,0 +1,10 @@
+F:\Projects\software\lib\tidy5sd.lib
+F:\Projects\software\lib\tidy5d.lib
+F:\Projects\software\include\platform.h
+F:\Projects\software\include\buffio.h
+F:\Projects\software\lib\tidy5d.lib
+F:\Projects\software\bin\tidy5d.dll
+F:\Projects\software\bin\tidy5.exe
+F:\Projects\software\lib\tidy5.lib
+F:\Projects\software\bin\tidy5.dll
+F:\Projects\software\bin\tidy5.exe
