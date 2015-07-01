@@ -4,7 +4,7 @@ Some simple test cases using a cmake FindTidy.cmake module.
 
 This is also important after the major version change to 5.0.0.RC1.
 
-Users upgrading to this need to ensure they uninstall any of the Tidy5 installs. There is a build/deleteW.txt to give the general files to delete from the install.
+Users upgrading to this need to ensure they uninstall any of the Tidy5 installs. There is a build/delete(W|U).txt to give the general files to delete from the install.
 
 #### test-tidy app
 
@@ -15,6 +15,8 @@ Acutally has the same functionality as classic tidy since it in fact uses the ti
 First a test of setting a string option to a blank, and then running libtidy using own constructed memory allocator.
 
 #### test71
+
+Has not been ported to unix yet.
 
 This was a test app added to tidy-html5 while exploring Issue 71. A copy made here and some error checking added.
 

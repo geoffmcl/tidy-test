@@ -1,0 +1,8 @@
+/usr/lib/tidy5s.a
+/usr/lib/tidy5.so
+/usr/include/platform.h
+/usr/include/buffio.h
+/usr/bin/tidy5
+/usr/local/local/man/man1/tidy5.1
+/usr/share/man/man1/tidy5.1
+
