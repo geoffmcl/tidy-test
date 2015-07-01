@@ -8,6 +8,7 @@
 #include <tidy.h>
 
 #ifdef WIN32
+// CAN NOT DEFINE THIS!!! # define IPV6STRICT 1
 # include <winsock2.h>
 # define ECONNREFUSED WSAECONNREFUSED
 #else

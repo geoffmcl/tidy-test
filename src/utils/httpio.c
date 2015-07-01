@@ -10,6 +10,15 @@
 #define SPRTF printf
 #endif
 
+#if 0 // 0000000000000
+GET /vos.htm HTTP/1.1
+User-Agent: Wget/1.14 (DOS)
+Accept: */ *
+Host: geoffair.org
+Connection: Keep-Alive
+#endif // 000000000000000000000
+
+
 ////////////////////////////////////////////////////////////////
 // some tidy internal utilities
 // #define TidyAlloc(allocator, size) ((allocator)->vtbl->alloc((allocator), (size)))
@@ -243,11 +252,14 @@ int fillBuffer( HTTPInputSource *in )
     return in->nBufSize;
 }
 
+#define USE_HTTP_10
 
 int openURL( HTTPInputSource *in, tmbstr pUrl )
 {
+    size_t len = 2048;
     int rc = -1;
     int nbp, nbs;
+    char *getCmd;
 #ifdef WIN32    
     WSADATA wsaData;
     rc = WSAStartup( 514, &wsaData );
@@ -260,27 +272,39 @@ int openURL( HTTPInputSource *in, tmbstr pUrl )
     in->nextBytePos = in->nextUnGotBytePos = in->nBufSize = 0;
 
     parseURL( in, pUrl );
+
+    getCmd = (char *)MemAlloc(len);
+    if (!getCmd) {
+        SPRTF("Memory FAILED on %d byes\n", (int)len);
+        return 2;
+    }
+#ifdef USE_HTTP_10
+    len = sprintf( getCmd, "GET /%s HTTP/1.0\r\nAccept: text/html\r\n\r\n", in->pResource );
+#else
+    len = sprintf( getCmd, "GET /%s HTTP/1.1\r\n"
+            "User-Agent: tidy-url\r\n"
+            "Accept: *.*"
+            "Host: %s\r\n"
+            "Connection: Keep-Alive\r\n"
+            "\r\n",
+            in->pResource,
+            in->pHostName );
+#endif
+    len = strlen(getCmd);
     if (0 == (rc = makeConnection( in )))
     {
         char ch, lastCh = '\0';
         int blanks = 0;
-        size_t len = 48 + strlen( in->pResource );
-        char *getCmd = (char *)MemAlloc(len);
-        if (!getCmd) {
-            SPRTF("Memory FAILED on %d byes\n", (int)len);
-            return 2;
-        }
-        sprintf( getCmd, "GET /%s HTTP/1.0\r\nAccept: text/html\r\n\r\n", in->pResource );
-        len = strlen(getCmd);
+        //size_t len = 48 + strlen( in->pResource );
         rc = send( in->s, getCmd, len, 0 );
-        MemFree( getCmd );
-
         if (rc == -1) {
             SPRTF("send FAILED with %d!\n",rc);
+            MemFree( getCmd );
             return 2;
         }
         if (rc != (int)len) {
             SPRTF("send FAILED to send req %d! got %d\n",(int)len, rc);
+            MemFree( getCmd );
             return 2;
         }
 
@@ -326,6 +350,7 @@ int openURL( HTTPInputSource *in, tmbstr pUrl )
             rc = fillBuffer(in);
         }
     }
+    MemFree( getCmd );
     if (rc > 0)
         return 0;
     return rc;
