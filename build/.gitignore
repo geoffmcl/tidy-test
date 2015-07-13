@@ -18,4 +18,5 @@ Win32/*
 ipch/*
 libutillib.a
 tidy-opts
+test71
 

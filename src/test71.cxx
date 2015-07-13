@@ -24,12 +24,15 @@ static const char *sample =
 int main(int argc, char **argv) 
 {
     int rc;
+    TidyNode body = 0;
+    TidyNode text_node = 0;
     printf("\nSimple example of HTML Tidy API use.\n");
     if (argc > 1) {
         printf("All parameters are ignored!\n");
     }
     TidyDoc tdoc = tidyCreate();
     TidyBuffer buff, buff2;
+    
     tidyBufInit(&buff);
     tidyBufInit(&buff2);
     tidyBufAppend(&buff, (void *)sample, strlen(sample));
@@ -37,13 +40,13 @@ int main(int argc, char **argv)
     if (rc != 0) {
         printf("Impossible: Parsing canned html returned %d\n",rc);
     }
-    TidyNode body = tidyGetBody(tdoc);
+    body = tidyGetBody(tdoc);
     if (!body) {
         printf("Impossible! Body node not found!\n");
         goto exit;
     }
 
-    TidyNode text_node = tidyGetChild(body);
+    text_node = tidyGetChild(body);
     if (!text_node) {
         printf("Impossible! Body node has no content!\n");
         goto exit;
