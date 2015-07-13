@@ -19,4 +19,5 @@ ipch/*
 libutillib.a
 tidy-opts
 test71
+test226
 
