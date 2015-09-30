@@ -22,7 +22,7 @@ static const char *def_log = "temptree.txt";
 static const char *usr_input = 0;
 static int ind_step = 2;
 static const char *def_test = "F:\\Projects\\tidy-html5\\test\\input5\\in_273-3.html";
-static bool debug_on = true;
+static bool debug_on = false;   // true;
 
 void give_help( char *name )
 {
