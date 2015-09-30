@@ -942,10 +942,10 @@ static void optionvalues( TidyDoc tdoc )
 static void version( void )
 {
 #ifdef PLATFORM_NAME
-    printf( "HTML Tidy for %s version %s\n",
-             PLATFORM_NAME, tidyLibraryVersion() );
+    printf( "HTML Tidy for %s version %s (%s)\n",
+             PLATFORM_NAME, tidyLibraryVersion(), tidyReleaseDate() );
 #else
-    printf( "HTML Tidy version %s\n", tidyLibraryVersion() );
+    printf( "HTML Tidy version %s (%s)\n", tidyLibraryVersion(), tidyReleaseDate() );
 #endif
 }
 
