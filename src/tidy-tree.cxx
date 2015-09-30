@@ -11,6 +11,7 @@
 #include <stdio.h>
 #include <string.h> // for strdup(), ...
 #include "tidy.h"
+#include "tidybuffio.h"
 #include "sprtf.h"
 
 #ifndef SPRTF
@@ -22,8 +23,11 @@ static const char *def_log = "temptree.txt";
 static const char *usr_input = 0;
 static int ind_step = 2;
 static const char *def_test = "F:\\Projects\\tidy-html5\\test\\input5\\in_273-3.html";
-static bool debug_on = false;   // true;
-
+static bool debug_on = true;
+static TidyDoc tdoc = 0;
+static TidyBuffer txtbuf;
+static size_t total_txt = 0;
+static int txt_nodes = 0;
 void give_help( char *name )
 {
     SPRTF("%s: usage: [options] usr_input\n", module);
@@ -40,6 +44,13 @@ void dumpNode( TidyNode tnod, int indent, int *pcnt )
         ctmbstr name = NULL;
         *pcnt += 1;
         TidyNodeType nt = tidyNodeGetType(child);
+        tidyBufClear( &txtbuf );
+
+        if (tidyNodeHasText(tdoc, child)) {
+            if (!tidyNodeGetText(tdoc, child, &txtbuf)) {
+                SPRTF("Warning: tidyNodeGetText failed?!?\n");
+            }
+        }
         switch (nt)
         {
         case TidyNode_Root:
@@ -87,7 +98,14 @@ void dumpNode( TidyNode tnod, int indent, int *pcnt )
             SPRTF("Internal Error: Failed to get node name/type!!! *** FIX ME ***\n");
             exit(1);
         }
-        SPRTF( "%*.*sNode:%d: %s\n", indent, indent, " ", *pcnt, name );
+        SPRTF( "%*.*sNode:%d: %s ", indent, indent, " ", *pcnt, name );
+        if (txtbuf.bp && txtbuf.size) {
+            total_txt += txtbuf.size;
+            SPRTF("(%d) ", txtbuf.size);
+            txt_nodes++;
+
+        }
+        SPRTF("\n");
         dumpNode( child, indent + ind_step, pcnt );
     }
 }
@@ -103,14 +121,16 @@ void countNodes( TidyNode tnod, int *pcnt )
 }
 
 
-void dumpDoc( TidyDoc tdoc )
+void dumpDoc( TidyDoc doc )
 {
-    TidyNode node = tidyGetRoot(tdoc);
+    TidyNode node = tidyGetRoot(doc);
     int count = 0;
     countNodes( node, &count );
     SPRTF("Dump of %d nodes...\n", count );
     count = 0;
+    tidyBufInit( &txtbuf );
     dumpNode( node, 0, &count );
+    SPRTF("Found %ld text bytes on %d nodes...\n", total_txt, txt_nodes );
 }
 
 
@@ -200,7 +220,7 @@ int show_tidy_nodes()
     size_t sz = get_last_file_size();
     SPRTF("Processing file '%s', %ld bytes...\n", htmlfil, sz );
 
-    TidyDoc tdoc = tidyCreate();
+    tdoc = tidyCreate();
 
     status = tidyParseFile( tdoc, htmlfil );
     if ( status >= 0 )
