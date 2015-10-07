@@ -59,6 +59,21 @@ else ()
     message(FATAL_ERROR "*** Tidy NOT found! Maybe set ENV TIDY_ROOT to install location")
 endif ()
 
+#  CURL_FOUND          - True if curl found.
+#  CURL_INCLUDE_DIRS   - where to find curl/curl.h, etc.
+#  CURL_LIBRARIES      - List of libraries when using curl.
+#  CURL_VERSION_STRING - the version of curl found (since CMake 2.8.8)
+find_package(CURL)
+if (CURL_FOUND)
+    message(STATUS "*** CURL found inc ${CURL_INCLUDE_DIRS} lib ${CURL_LIBRARIES}")
+    include_directories( ${CURL_INCLUDE_DIRS} )
+    list( APPEND add_LIBS ${CURL_LIBRARIES} )
+    message(STATUS "cURL version ${CURL_VERSION_STRING}")
+else ()
+    message(STATUS "*** CURL NOT FOUND")
+endif ()
+
+
 # configuration file, if needed
 # configure_file( ${CMAKE_SOURCE_DIR}/config.h.cmake ${CMAKE_BINARY_DIR}/config.h )
 # add_definitions( -DHAVE_CONFIG_H )
@@ -194,5 +209,23 @@ if (MSVC)
 endif ()
 # deal with install, if any...
 #install( TARGETS ${name} DESTINATION bin )
+
+if (CURL_FOUND)
+    set(name htmltidy)
+    set(dir src)
+    set(${name}_SRCS
+        ${dir}/${name}.c
+        )
+    add_executable( ${name} ${${name}_SRCS} )
+    if (add_LIBS)
+        target_link_libraries( ${name} ${add_LIBS} )
+    endif ()
+    if (MSVC)
+        set_target_properties( ${name} PROPERTIES DEBUG_POSTFIX d )
+    endif ()
+    # deal with install, if any...
+    #install( TARGETS ${name} DESTINATION bin )
+
+endif ()
 
 # eof
