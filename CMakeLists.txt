@@ -226,6 +226,20 @@ if (CURL_FOUND)
     # deal with install, if any...
     #install( TARGETS ${name} DESTINATION bin )
 
+    set(name url2text)
+    set(dir src)
+    set(${name}_SRCS
+        ${dir}/${name}.cxx
+        )
+    add_executable( ${name} ${${name}_SRCS} )
+    if (add_LIBS)
+        target_link_libraries( ${name} ${add_LIBS} )
+    endif ()
+    if (MSVC)
+        set_target_properties( ${name} PROPERTIES DEBUG_POSTFIX d )
+    endif ()
+    # deal with install, if any...
+    #install( TARGETS ${name} DESTINATION bin )
 endif ()
 
 # eof
