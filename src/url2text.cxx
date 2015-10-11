@@ -11,7 +11,7 @@
  * Licence: GNU GPL version 2
  *
  * Just example code to use library CURL to download a url, and 
- * use library Tidy to output only the text nodes
+ * use library Tidy to output the text nodes, and other things...
  *
 \*/
 
@@ -20,18 +20,25 @@
 #include <tidybuffio.h>
 #include <curl/curl.h>
 #include "sprtf.h"
+#include "utils.hxx"
 
 #ifndef SPRTF
 #define SPRTF printf
 #endif 
-
+#ifndef ISDIGIT
+#define ISDIGIT(a) ( ( a >= '0' ) && ( a <= '9' ) )
+#endif
+#ifndef CHKMEM
+#define CHKMEM(a) if (!a) { SPRTF("%s: memory allocation failed!\n"); exit(1); }
+#endif
 static const char *module = "url2text";
+
 static const char *def_log = "tempu2t.txt";
 static const char *usr_input = 0;
 static const char *usr_output = 0;
 static FILE *usr_file = 0;
 
-static bool show_tags = false;
+static int show_tags = 0;
 static int verbosity = 0;
 
 #define VERB1 (verbosity >= 1)
@@ -40,10 +47,69 @@ static int verbosity = 0;
 #define VERB9 (verbosity >= 9)
 
 // options
-static bool show_title = false;
-static bool show_links = false;
-static bool show_raw_text = true;
-static bool skip_all_one = true;
+static int show_errors = 0;
+static int show_title = 0;
+static int show_links = 0;
+static int show_raw_text = 1;
+static int skip_all_one = 1;
+static int show_script = 0;
+static int skip_not_letters = 1;
+static int add_indenting = 0;
+#define MX_IND 256
+static int tab_size = 4;
+
+////////////////////////////////
+static double bgn_secs = 0;
+
+/* used to classify characters for lexical purposes */
+#define MAP(c) ((unsigned)c < 128 ? lexmap[(unsigned)c] : 0)
+static uint lexmap[128];
+static int done_map = 0;
+
+/* lexer character types
+*/
+#define digit       1u
+#define letter      2u
+#define namechar    4u
+#define white       8u
+#define newline     16u
+#define lowercase   32u
+#define uppercase   64u
+#define digithex    128u
+
+static void MapStr( ctmbstr str, uint code )
+{
+    while ( *str )
+    {
+        uint i = (byte) *str++;
+        lexmap[i] |= code;
+    }
+}
+
+static void InitMap()
+{
+    MapStr("\r\n\f", newline|white);
+    MapStr(" \t", white);
+    MapStr("-.:_", namechar);
+    MapStr("0123456789", digit|digithex|namechar);
+    MapStr("abcdefghijklmnopqrstuvwxyz", lowercase|letter|namechar);
+    MapStr("ABCDEFGHIJKLMNOPQRSTUVWXYZ", uppercase|letter|namechar);
+    MapStr("abcdefABCDEF", digithex);
+    done_map = 1;
+}
+
+
+static Bool IsLetter(uint c)
+{
+    uint map;
+    if (!done_map)
+        InitMap();
+
+    map = MAP(c);
+
+    return ((map & letter) != 0) ? yes : no;
+}
+
 
 /* curl write callback, to fill tidy's input buffer...  */
 uint write_cb(char *in, uint size, uint nmemb, TidyBuffer *out)
@@ -61,6 +127,9 @@ typedef struct tagNODEDUMP {
     TidyTagId nid;
 } NODEDUMP, *PNODEDUMP;
 
+///////////////////////////////////////////////////////////////
+// gathering text nodes can give some strange strings
+// this is a filter of what will be displayed
 char *filterBuffer(char *cp)
 {
     size_t i, len;
@@ -86,9 +155,32 @@ char *filterBuffer(char *cp)
             cp = EndBuf(cp);
         }
     }
+    len = strlen(cp);
+    if (len && skip_not_letters) {
+        for (i = 1; i < len; i++) {
+            c = cp[i];
+            if (IsLetter(c))
+                break;
+        }
+        if (i >= len) {
+            cp = EndBuf(cp);
+        }
+    }
     return cp;
 }
-
+static char _s_ind[MX_IND+4];
+char *getIndent(int indent)
+{
+    char *cp = _s_ind;
+    int i, len = indent * tab_size;
+    if (len > MX_IND)
+        len = MX_IND;
+    for (i = 0; i < len; i++) {
+        cp[i] = ' ';
+    }
+    cp[i] = 0;
+    return cp;
+}
 
 /* Traverse the document tree */
 //void dumpNode(TidyDoc doc, TidyNode tnod, int indent )
@@ -99,6 +191,11 @@ void dumpNode( PNODEDUMP pnd, int indent )
     TidyNode child;
     char *cp;
     size_t len;
+    int res;
+    TidyNode parent = tidyGetParent(tnod);
+    const char *ind = "";
+    if (add_indenting)
+        ind = getIndent(indent);
     for ( child = tidyGetChild(tnod); child; child = tidyGetNext(child) )
     {
         TidyNodeType nt = tidyNodeGetType( child );
@@ -111,7 +208,7 @@ void dumpNode( PNODEDUMP pnd, int indent )
             ctmbstr  aval;
             if (show_links && (nid == TidyTag_A)) {
                 cp = GetNxtBuf();
-                strcpy(cp,"LINK: ");
+                sprintf(cp,"%sLINK: ", ind);
                 for ( attr = tidyAttrFirst(child); attr; attr=tidyAttrNext(attr) ) {
                     strcat(cp,tidyAttrName(attr));
                     aval = tidyAttrValue(attr);
@@ -121,15 +218,39 @@ void dumpNode( PNODEDUMP pnd, int indent )
                         strcat(cp," ");
                     }
                 }
-                SPRTF("%s\n",cp);
-            } else if (show_tags) {
-                SPRTF( "%*.*s%s ", indent, indent, "<", name);
-                /* walk the attribute list */
-                for ( attr=tidyAttrFirst(child); attr; attr=tidyAttrNext(attr) ) {
-                    SPRTF(tidyAttrName(attr));
-                    tidyAttrValue(attr) ? SPRTF("=\"%s\" ",tidyAttrValue(attr)) : SPRTF(" ");
+                if (usr_file) {
+                    res = fprintf(usr_file,"%s\n",cp);
+                    if (res < 0) {
+                        SPRTF("Error writing to '%s'!\n", usr_output);
+                        fclose(usr_file);
+                        usr_file = 0;
+                        SPRTF("%s\n", cp);
+                    }
+                } else {
+                    SPRTF("%s\n",cp);
                 }
-                SPRTF( ">\n");
+            } else if (show_tags) {
+                cp = GetNxtBuf();
+                sprintf(cp, "%s<%s", ind, name);
+                /* walk the attribute list */
+                attr = tidyAttrFirst(child);
+                for ( ; attr; attr=tidyAttrNext(attr) ) {
+                    sprintf(EndBuf(cp)," %s", tidyAttrName(attr));
+                    if (tidyAttrValue(attr))
+                        sprintf(EndBuf(cp),"=\"%s\"",tidyAttrValue(attr));
+                }
+                strcat(cp,">");
+                if (usr_file) {
+                    res = fprintf(usr_file,"%s\n",cp);
+                    if (res < 0) {
+                        SPRTF("Error writing to '%s'!\n", usr_output);
+                        fclose(usr_file);
+                        usr_file = 0;
+                        SPRTF("%s\n", cp);
+                    }
+                } else {
+                    SPRTF("%s\n",cp);
+                }
             }
         }
         else 
@@ -138,7 +259,7 @@ void dumpNode( PNODEDUMP pnd, int indent )
             TidyBuffer buf;
             tidyBufInit(&buf);
             if (show_raw_text) {
-                tidyNodeGetText(doc, child, &buf);
+                tidyNodeGetValue(doc, child, &buf);
             } else {
                 tidyNodeGetText(doc, child, &buf);
             }
@@ -164,18 +285,22 @@ void dumpNode( PNODEDUMP pnd, int indent )
                     if (show) {
                         if (nt != TidyNode_Comment) {
                             if (usr_file) {
-                                int res = fprintf(usr_file,"%s\n",cp);
+                                if (pnd->nid == TidyTag_TITLE) {
+                                    res = fprintf(usr_file,"%sTITLE: %s\n",ind,cp);
+                                } else {
+                                    res = fprintf(usr_file,"%s%s\n",ind,cp);
+                                }
                                 if (res < 0) {
                                     SPRTF("Error writing to '%s'!\n", usr_output);
                                     fclose(usr_file);
                                     usr_file = 0;
-                                    SPRTF("%s\n", cp);
+                                    SPRTF("%s%s\n", ind,cp);
                                 }
                             } else {
                                 if (pnd->nid == TidyTag_TITLE) {
-                                    SPRTF("TITLE: %s\n", cp);
+                                    SPRTF("%sTITLE: %s\n", ind, cp);
                                 } else {
-                                    SPRTF("%s\n", cp);
+                                    SPRTF("%s%s\n", ind, cp);
                                 }
                             }
                         }
@@ -188,7 +313,7 @@ void dumpNode( PNODEDUMP pnd, int indent )
         pnd->tnod = child;
         pnd->nid  = nid;
         pnd->nt   = nt;
-        dumpNode( pnd, indent + 4 ); /* recursive for every node */
+        dumpNode( pnd, indent + 1 ); /* recursive for every node */
     }
 }
 
@@ -205,7 +330,12 @@ int load_url()
     int err;
 
     // code
+    curl_errbuf[0] = 0;
     curl = curl_easy_init();
+    if (!curl) {
+        SPRTF("%s: curl_easy_init() failed!\n", module );
+        return 1;
+    }
     curl_easy_setopt(curl, CURLOPT_URL, url);
     curl_easy_setopt(curl, CURLOPT_ERRORBUFFER, curl_errbuf);
     if (VERB2) {
@@ -230,6 +360,8 @@ int load_url()
 
     if ( !err ) {
         // got the URL data, give to libtidy
+        char *elap = get_seconds_stg( get_seconds() - bgn_secs );
+        SPRTF("Fetched %d bytes from '%s', in %s\n", docbuf.size, url, elap );
         err = tidyParseBuffer(tdoc, &docbuf); /* parse the input */
         if ( err >= 0 ) {
             err = tidyCleanAndRepair(tdoc); /* fix any problems */
@@ -241,7 +373,7 @@ int load_url()
                     nd.doc = tdoc;
                     nd.tnod = tidyGetRoot(tdoc);
                     dumpNode( &nd, 0 ); /* walk the tree */
-                    if (VERB9) {
+                    if (VERB9 || show_errors) {
                         SPRTF("%s\n", tidy_errbuf.bp); /* show errors */
                     }
                 }
@@ -252,6 +384,7 @@ int load_url()
     {
         SPRTF("Curl: %s\n", curl_errbuf);
     }
+
     /* clean-up */
     curl_easy_cleanup(curl);
     tidyBufFree(&docbuf);
@@ -283,14 +416,48 @@ int parse_args( int argc, char **argv )
                 give_help(argv[0]);
                 return 2;
                 break;
-            case 'l':
-                show_links = true;
-                break;
             case 'a':
-                skip_all_one = false;
+                skip_all_one = 0;
+                break;
+            case 'b':
+                skip_not_letters = 0;
+                break;
+            case 'e':
+                show_errors = 1;
+                break;
+            case 'l':
+                show_links = 1;
                 break;
             case 't':
-                show_title = true;
+                show_title = 1;
+                break;
+            case 'v':
+                verbosity++;
+                sarg++;
+                while (*sarg) {
+                    if (ISDIGIT(*sarg)) {
+                        verbosity = atoi(sarg);
+                        break;
+                    } else if (*sarg == 'v') {
+                        verbosity++;
+                    }
+                }
+                break;
+            case 'o':
+                if (i2 < argc) {
+                    i++;
+                    sarg = argv[i];
+                    usr_output = strdup(sarg);
+                    CHKMEM(usr_output);
+                    usr_file = fopen(usr_output,"w");
+                    if (!usr_file) {
+                        SPRTF("%s: Error: Failed to open output file '%s'!\n", module, usr_output);
+                        return 1;
+                    }
+                } else {
+                    SPRTF("%s: Error: Expected output file to follow '%s'!\n", module, arg);
+                    return 1;
+                }
                 break;
             // TODO: Other arguments
             default:
@@ -298,12 +465,13 @@ int parse_args( int argc, char **argv )
                 return 1;
             }
         } else {
-            // bear argument
+            // bear argument - assume input url
             if (usr_input) {
                 SPRTF("%s: Already have input '%s'! What is this '%s'?\n", module, usr_input, arg );
                 return 1;
             }
             usr_input = strdup(arg);
+            CHKMEM(usr_input);
         }
     }
     if (!usr_input) {
@@ -318,27 +486,51 @@ int parse_args( int argc, char **argv )
 int main(int argc, char **argv )
 {
     int iret = 0;
-
+    bgn_secs = get_seconds();
     set_log_file((char *)def_log, 0);
 
     iret = parse_args( argc, argv );
     if (iret)
         return iret;
 
+    /////////////////////////////////////
     iret = load_url();  // action of app
+    /////////////////////////////////////
 
+    // CLEAN UP //
+    if (usr_file) {
+        fclose(usr_file);
+        SPRTF("%s: output written to '%s'\n", module, usr_output);
+    }
+    usr_file = 0;
+    if (usr_output)
+        free((void *)usr_output);
+    if (usr_input)
+        free((void *)usr_input);
+    SPRTF("%s: Ran for %s...\n", module, get_seconds_stg( get_seconds() - bgn_secs) );
     close_log_file();
     return iret;
 }
 
 void give_help( char *name )
 {
+    SPRTF("\n");
     SPRTF("%s: usage: [options] usr_input\n", module);
+    SPRTF("\n");
     SPRTF("Options:\n");
     SPRTF(" --help  (-h or -?) = This help and exit(2)\n");
-    SPRTF(" --links       (-l) = Show links in output\n");
-    SPRTF(" --title       (-t) = Show title in output\n");
-    SPRTF(" --all         (-a) = Show all text. Default is to skip lines of just one character.\n");
+    SPRTF(" --all         (-a) = Show all text. On skips lines of just 1 char. (def=%d)\n", skip_all_one);
+    SPRTF(" --bare        (-b) = Show non-letters. On skips lines with no letters. (def=%d)\n", skip_not_letters);
+    SPRTF(" --errors      (-e) = Show warnings and errors in output. (def=%d)\n", show_errors);
+    SPRTF(" --links       (-l) = Show links in output. (def=%d)\n", show_links);
+    SPRTF(" --title       (-t) = Show title in output. (def=%d)\n", show_title);
+    SPRTF(" --verb[n]     (-v) = Bump or set verbosity. 0,1,2,5,9 (def=%d)\n", verbosity);
+    SPRTF(" --out <file>  (-o) = Write output to this file. (def=%s)\n",
+        (usr_output ? usr_output : "<none>") );
+    SPRTF("\n");
+    SPRTF(" Use library CURL to fetch the URL text, into a tidy buffer,\n");
+    SPRTF(" and pass the html to library tidy, then enumerate the nodes\n");
+    SPRTF(" collected.\n");
 
     // TODO: More help
 }

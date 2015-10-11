@@ -94,9 +94,11 @@ set(dir src/utils)
 include_directories( ${dir} )
 set(${name}_SRCS 
     ${dir}/sprtf.c
+    ${dir}/utils.cxx
     )
 set(${name}_HDRS 
     ${dir}/sprtf.h
+    ${dir}/utils.hxx
     )
 if (WIN32)
     list(APPEND ${name}_SRCS ${dir}/httpio.c)
