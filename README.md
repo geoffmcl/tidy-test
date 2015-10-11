@@ -1,10 +1,18 @@
-# tidy-test 20150701
+# tidy-test 20151011
 
 Some simple test cases using a cmake FindTidy.cmake module.
 
-This is also important after the major version change to 5.0.0.RC1.
+This is also important after the major version change to 5.0.0
 
 Users upgrading to this need to ensure they uninstall any of the Tidy5 installs. There is a build/delete(W|U).txt to give the general files to delete from the install.
+
+#### url2text app
+
+If the [CURL](http://curl.haxx.se/) library is found, this little app is built. It accepts the input of a URL, and will use curl to fetch the html page. That page data will be passed to library Tidy in a buffer, and the tidy node tree will be dumped, to a file or stdout.
+
+Various options control what is shown from the node tree. The default are the text nodes, except comments. The data is trimmed in an attempt to produce a simple readable list of text from the fetched page, hence the idea of a URL to text utility.
+
+The idea was inspired by [edbrowse](http://edbrowse.org/), which similarly fetches a web page using curl, and passes the contents to library tidy to be able to iterate through the nodes collected, again with the idea of getting the readable text into a set of lines...
 
 #### test-tidy app
 
@@ -27,6 +35,6 @@ All input and output is using a `TidyBuffer`, so includes `<tidybuffio.h>`. **NO
 Enjoy.
 
 Geoff  
-20150701 - 20150610 - 20150520
+20151011 - 20150701 - 20150610 - 20150520
 
 ; eof
