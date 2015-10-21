@@ -7,6 +7,10 @@
 \*/
 
 #include <stdio.h>
+#ifndef WIN32
+#include <sys/time.h>   // for struct timeval, gettimeofday,...
+#include <string.h>     // for strcpy, ...
+#endif
 // other includes
 #include "utils.hxx"
 
