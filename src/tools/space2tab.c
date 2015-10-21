@@ -28,6 +28,8 @@
  *
 \*/
 
+#include <sys/types.h>
+#include <sys/stat.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -58,7 +60,6 @@ typedef struct
 	uint length;
 	char *buf;
 	Bool had_nonspace;
-    int space_cnt;
 	FILE *fp;
 } Stream;
 
@@ -139,7 +140,7 @@ static void FreeStream(Stream *in)
 
 static void AddByte(Stream *in, uint c)
 {
-    char *cp;
+	char *cp;
 	if (in->size + 1 >= in->length)
 	{
 		while (in->size + 1 >= in->length)
@@ -152,10 +153,10 @@ static void AddByte(Stream *in, uint c)
 
 		in->buf = (char *)MemRealloc(in->buf, in->length*sizeof(char));
 	}
-    cp = &in->buf[in->size++];
+	cp = &in->buf[in->size++];
 	*cp++ = (char)c;
-    *cp = '\0';  /* ensure zero termination */
-    cp = &in->buf[in->bgnline];
+	*cp = '\0';  /* ensure zero termination */
+	cp = &in->buf[in->bgnline];
 }
 
 //////////////////////////////////////////////////////////////////
@@ -163,21 +164,21 @@ static void AddByte(Stream *in, uint c)
 /////////////////////////////////////////////////////////////////
 Bool is_all_spaces( char *ln, int cnt )
 {
-    Bool ret = no;
-    while (*ln && cnt)
-    {
-        if (*ln == ' ') 
-        {
-            cnt--;
-            if (cnt == 0)
-                return yes;
-        }
-        else
-            return no;
-        ln++;
+	Bool ret = no;
+	while (*ln && cnt)
+	{
+		if (*ln == ' ') 
+		{
+			cnt--;
+			if (cnt == 0)
+				return yes;
+		}
+		else
+			return no;
+		ln++;
 
-    }
-    return no;
+	}
+	return no;
 }
 
 /*
@@ -240,20 +241,19 @@ static int ReadChar(Stream *in)
 			in->curline++;
 			in->had_nonspace = no;
 			in->bgnline = in->size; /* keep offset to begin of this line in the buffer */
-            in->space_cnt = 0;
 			break;
 		}
 
 		if (c == '\t')
 		{
 			if (tabs)
-            {
-                /* in this utility, this is ALWAYS true - Tabs are kept as tabs */
+			{
+				/* in this utility, this is ALWAYS true - Tabs are kept as tabs */
   			    in->curcol += tabsize - ((in->curcol - 1) % tabsize);
-            }
+			}
 			else
 			{
-                /* expand to spaces - NEVER happens in this tool - not tested */
+				/* expand to spaces - NEVER happens in this tool - not tested */
 				in->tabs = tabsize - ((in->curcol - 1) % tabsize) - 1;
 				in->curcol++;
 				c = ' ';
@@ -272,7 +272,7 @@ static int ReadChar(Stream *in)
 		if (c > 32) 
 		{
 			if (in->had_nonspace == no) {
-                // first non-space character found
+				// first non-space character found
 				if( in->curcol >= tabsize )
 				{
 					/* maybe substitute spaces with a tab */
@@ -283,7 +283,7 @@ static int ReadChar(Stream *in)
 					while ((ui >= tabsize) && (*ln == ' ') && (is_all_spaces(ln,tabsize))) {
 						if ((int)in->size >= tabsize) {
 							in->size -= tabsize;
-                            ln += tabsize;
+							ln += tabsize;
 							cnt++;
 						} else {
 							break; /* this should NEVER happen */
@@ -299,14 +299,7 @@ static int ReadChar(Stream *in)
 				}
 			}
 			in->had_nonspace = yes;
-            in->space_cnt = 0;
 		}
-        else if ( c == ' ' )
-        {
-            in->space_cnt++;
-            if (in->space_cnt > 3)
-                cnt = 0;
-        }
 		in->curcol++;
 		break;
 	}
@@ -325,6 +318,10 @@ static Stream *ReadFile(FILE *fin)
 	return in;
 }
 
+/////////////////////////////////////////////////////////////////
+// write the buffered input, modified data to the output file,
+// adding the desired end of line character(s)
+/////////////////////////////////////////////////////////////////
 static void WriteFile(Stream *in, FILE *fout)
 {
 	int i, c;
@@ -412,7 +409,7 @@ int parse_args( int argc, char **argv )
 					sarg++;
 				if (ISDIGIT(*sarg)) {
 					if (sscanf(sarg, "%d", &tabsize) != 1) {
-						printf("Option '%s' failed to yield in integer!\n", arg);
+						fprintf(stderr,"Option '%s' failed to yield in integer!\n", arg);
 						return -1;
 					}
 				} else if (i2 < argc) {
@@ -421,33 +418,33 @@ int parse_args( int argc, char **argv )
 					sarg = argv[i];
 					if (ISDIGIT(*sarg)) {
 						if (sscanf(sarg, "%d", &tabsize) != 1) {
-							printf("Option '%s %s' failed to yield in integer!\n", arg, sarg);
+							fprintf(stderr,"Option '%s %s' failed to yield in integer!\n", arg, sarg);
 							return -1;
 						}
 					} else {
-						printf("Expected integer to follow '%s'!\n", arg);
+						fprintf(stderr,"Expected integer to follow '%s'!\n", arg);
 						return -1;
 					}
 				} else {
-					printf("Expected integer to follow '%s'!\n", arg);
+					fprintf(stderr,"Expected integer to follow '%s'!\n", arg);
 					return -1;
 				}
 				if ((tabsize < 1) || (tabsize > 255)) 
 				{
-					printf("Option '%s' yield bad tabsize %d. Range 1 - 255!\n", arg, tabsize);
+					fprintf(stderr,"Option '%s' yield bad tabsize %d. Range 1 - 255!\n", arg, tabsize);
 					return -1;
 				}
 				break;
 
 			default:
-				printf("%s: Unknown argument '%s'. Try -? for help...\n", module, arg);
+				fprintf(stderr,"%s: Unknown argument '%s'. Try -? for help...\n", module, arg);
 				return -1;
 			}
 		} else {
 			// bear argument
 			if (usr_input) {
 				if (usr_output) {
-					printf("%s: Already have input '%s', and output '%s'! What is this '%s'?\n", module, usr_input, usr_output, arg );
+					fprintf(stderr,"%s: Already have input '%s', and output '%s'! What is this '%s'?\n", module, usr_input, usr_output, arg );
 					return -1;
 				} else {
 					usr_output = strdup(arg);
@@ -458,10 +455,75 @@ int parse_args( int argc, char **argv )
 		}
 	}
 	if (!usr_input) {
-		printf("%s: No user input found in command!\n", module);
+		fprintf(stderr,"%s: No user input found in command!\n", module);
 		return -1;
 	}
 	return 0;
+}
+
+#ifdef _MSC_VER
+#define M_IS_DIR _S_IFDIR
+#else // !_MSC_VER
+#define M_IS_DIR S_IFDIR
+#endif
+
+#define MDT_NONE    0
+#define MDT_FILE    1
+#define MDT_DIR     2
+
+static struct stat buf;
+static int is_file_or_directory( const char *path )
+{
+	if (!path)
+		return MDT_NONE;
+	if (stat(path,&buf) == 0)
+	{
+		if (buf.st_mode & M_IS_DIR)
+			return MDT_DIR;
+		else
+			return MDT_FILE;
+	}
+	return MDT_NONE;
+}
+
+char *file_name_only( char *path )
+{
+	char *file = path;
+	size_t i, len = strlen(path);
+	int c;
+	for (i = 0; i < len; i++) {
+		c = path[i];
+		if (( c == '/') || (c == '\\'))
+			file = &path[i+1];
+	}
+	return file;
+}
+
+int rename_to_bak( char *file )
+{
+	int res = 0;
+	if (is_file_or_directory( file ) == MDT_FILE) {
+		char buff[264];
+		char *cp = buff;
+		strcpy(cp,file);
+		strcat(cp,".bak");
+		if (is_file_or_directory( cp ) == MDT_FILE) {
+			res = unlink(cp);
+			if (res) {
+				fprintf(stderr,"%s: Failed to delete '%s'!\n", module, cp);
+			}
+		}
+
+#ifdef WIN32
+		strcpy(cp,file_name_only(file));
+		strcat(cp,".bak");
+#endif  // WIN32
+		res = rename(file,cp);
+		if (res) {
+			fprintf(stderr,"%s: Failed to rename '%s' to '%s'!\n", module, file, cp);
+		}
+	}
+	return res;
 }
 
 // main() OS entry
@@ -480,16 +542,17 @@ int main( int argc, char **argv )
 
 	fin = fopen(usr_input, "rb");   /* note binary read */
 	if (!fin) {
-		printf("%s: Failed to open input file '%s'\n", module, usr_input);
+		fprintf(stderr,"%s: Failed to open input file '%s'\n", module, usr_input);
 		return -1;
 	}
 	in = ReadFile(fin);
 	fclose(fin);
 
 	if (usr_output) {
+		rename_to_bak((char *)usr_output);  /* try to never overwrite a file */
 		fout = fopen(usr_output, "wb"); /* note binary write */
 		if (!fout) {
-			printf("%s: Failed to open output file '%s'\n", module, usr_output);
+			fprintf(stderr,"%s: Failed to open output file '%s'\n", module, usr_output);
 			return -1;
 		}
 	} else {
