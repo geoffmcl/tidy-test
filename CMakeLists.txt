@@ -244,4 +244,20 @@ if (CURL_FOUND)
     #install( TARGETS ${name} DESTINATION bin )
 endif ()
 
+###############################################################
+### utiltity/tool to convert leading spaces in a file to tabs
+set(name space2tab)
+set(dir src/tools)
+set(${name}_SRCS
+    ${dir}/${name}.c
+    )
+add_executable( ${name} ${${name}_SRCS} )
+if (add_LIBS)
+    target_link_libraries( ${name} ${add_LIBS} )
+endif ()
+if (MSVC)
+    set_target_properties( ${name} PROPERTIES DEBUG_POSTFIX d )
+endif ()
+
+################################################################
 # eof
