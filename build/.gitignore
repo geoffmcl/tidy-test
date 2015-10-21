@@ -20,4 +20,8 @@ libutillib.a
 tidy-opts
 test71
 test226
+htmltidy
+space2tab
+tidy-tree
+url2text
 
