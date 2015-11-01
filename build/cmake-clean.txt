@@ -2,4 +2,10 @@ bldlog-1.txt
 tidy-test
 libutillib.a
 tidy-opts
+htmltidy
+space2tab
+test226
+test71
+tidy-tree
+url2text
 
