@@ -34,6 +34,7 @@
 static const char *module = "url2text";
 
 static const char *def_log = "tempu2t.txt";
+static const char *def_url = "tempurl.html";
 static const char *usr_input = 0;
 static const char *usr_output = 0;
 static FILE *usr_file = 0;
@@ -317,6 +318,28 @@ void dumpNode( PNODEDUMP pnd, int indent )
     }
 }
 
+void write_doc_buffer(TidyBuffer *b)
+{
+    if (b && b->bp && b->size) 
+    {
+        FILE *fp = fopen(def_url,"w");
+        if (fp) {
+            size_t res = fwrite( b->bp, 1, b->size, fp);
+            fclose(fp);
+            if (res == b->size) {
+                SPRTF("%s: Written fetch to '%s'.\n", module, def_url);
+            } else {
+                SPRTF("%s: Written fetch to '%s', but got res %d. Expected %d\n", module, def_url, res, b->size);
+            }
+
+        } else {
+            SPRTF("%s: Failed to open file '%s'!\n", module, def_url );
+        }
+
+    } else {
+        SPRTF("%s: TidyBuffer not valid!\n", module );
+    }
+}
 
 int load_url()
 {
@@ -361,7 +384,8 @@ int load_url()
     if ( !err ) {
         // got the URL data, give to libtidy
         char *elap = get_seconds_stg( get_seconds() - bgn_secs );
-        SPRTF("Fetched %d bytes from '%s', in %s\n", docbuf.size, url, elap );
+        SPRTF("%s: Fetched %d bytes from '%s', in %s\n", module, docbuf.size, url, elap );
+        write_doc_buffer(&docbuf);
         err = tidyParseBuffer(tdoc, &docbuf); /* parse the input */
         if ( err >= 0 ) {
             err = tidyCleanAndRepair(tdoc); /* fix any problems */
