@@ -33,7 +33,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
+#ifndef WIN32
+#include <unistd.h> // for unlink, ...
+#endif // !WIN32
 #include <tidyplatform.h>
 
 #ifndef S2T_VERSION

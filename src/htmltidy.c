@@ -145,7 +145,7 @@ void dumpNode(TidyDoc doc, TidyNode tnod, int indent )
             /* walk the attribute list */
             for ( attr=tidyAttrFirst(child); attr; attr=tidyAttrNext(attr) ) {
                 fprintf(OUTFILE," ");
-                fprintf(OUTFILE,tidyAttrName(attr));
+                fprintf(OUTFILE,"%s",tidyAttrName(attr));
                 if (tidyAttrValue(attr))
                     fprintf(OUTFILE,"=\"%s\"", tidyAttrValue(attr));
             }
