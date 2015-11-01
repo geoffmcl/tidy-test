@@ -1,10 +1,22 @@
-# tidy-test 20151011
+# tidy-test 20151101
 
-Some simple test cases using a cmake FindTidy.cmake module.
+Some simple test cases using a cmake FindTidy.cmake module to find libtidy as a 3rdParty library, and then using the Tidy API.
 
 This is also important after the major version change to 5.0.0
 
 Users upgrading to this need to ensure they uninstall any of the Tidy5 installs. There is a build/delete(W|U).txt to give the general files to delete from the install.
+
+#### Project List
+
+ * htmltidy - Needs CURL. Fetch a URL, parse with Tidy, and enumerated tree of nodes
+ * space2tab - Very specific tool to convert indent spaces added by my MSVC IDE editor to a tab
+ * test226 - Issue #226 - test node, attribute deletion
+ * test71 - Issue #71 - Difference between cooked tidyNodeGetText() and raw tidyNodeGetValue()
+ * tidy-opts - Test code to set some options, and compare to default.
+ * tidy-test - This is actually a mirror of the tidy binary. Uses 99% same source
+ * tidy-tree - Parse a html file, and output of the tidy nodes
+ * tidy-url - Fetch and show a URL page.
+ * url2text - Fetch a page, but only show the text nodes...
 
 #### url2text app
 
@@ -35,6 +47,6 @@ All input and output is using a `TidyBuffer`, so includes `<tidybuffio.h>`. **NO
 Enjoy.
 
 Geoff  
-20151011 - 20150701 - 20150610 - 20150520
+20151101 - 20151011 - 20150701 - 20150610 - 20150520
 
 ; eof
