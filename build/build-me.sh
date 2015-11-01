@@ -3,6 +3,7 @@
 BN=`basename $0`
 TMPLOG="bldlog-1.txt"
 TMPBIN="tidy-test"
+VERBOSE="0"
 
 if [ -f "$TMPLOG" ]; then
     rm -f $TMPLOG
@@ -23,10 +24,15 @@ if [ -f "$TMPBIN" ]; then
     rm -f $TMPBIN
 fi
 
-echo "$BN: Doing 'make VERBOSE=1'
-echo "$BN: Doing 'make VERBOSE=1' >> $TMPLOG
-make VERBOSE=1 >> $TMPLOG 2>&1
-
+if [ "$VERBOSE" = "1" ];then
+    echo "$BN: Doing 'make VERBOSE=1'"
+    echo "$BN: Doing 'make VERBOSE=1'" >> $TMPLOG
+    make VERBOSE=1 >> $TMPLOG 2>&1
+else
+    echo "$BN: Doing 'make'"
+    echo "$BN: Doing 'make'" >> $TMPLOG
+    make >> $TMPLOG 2>&1
+fi
 if [ ! "$?" = "0" ]; then
     echo "$BN: make error - see $TMPLOG"
     exit 1
