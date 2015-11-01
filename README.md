@@ -8,15 +8,15 @@ Users upgrading to this need to ensure they uninstall any of the Tidy5 installs.
 
 #### Project List
 
+ * tidy-test - This is actually a mirror of the tidy binary. Uses 99% same source
  * htmltidy - Needs CURL. Fetch a URL, parse with Tidy, and enumerated tree of nodes
- * space2tab - Very specific tool to convert indent spaces added by my MSVC IDE editor to a tab
  * test226 - Issue #226 - test node, attribute deletion
  * test71 - Issue #71 - Difference between cooked tidyNodeGetText() and raw tidyNodeGetValue()
  * tidy-opts - Test code to set some options, and compare to default.
- * tidy-test - This is actually a mirror of the tidy binary. Uses 99% same source
  * tidy-tree - Parse a html file, and output of the tidy nodes
- * tidy-url - Fetch and show a URL page.
- * url2text - Fetch a page, but only show the text nodes...
+ * tidy-url - WIN32 Only - Fetch and show a URL page using MS HTTPInputSource.
+ * url2text - Needs CURL. Fetch a page, but only show the text nodes...
+ * space2tab - Very specific tool to convert indent spaces added by my MSVC IDE editor to a tab.
 
 #### url2text app
 
