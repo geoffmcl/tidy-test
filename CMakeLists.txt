@@ -42,7 +42,7 @@ if(WIN32 AND MSVC)
     list(APPEND extra_LIBS Ws2_32 Winmm)
 else()
     # items for unix
-    set(WARNING_FLAGS "${WARNING_FLAGS} -Wno-unused-but-set-variable -Wno-unused-variable")
+    set(WARNING_FLAGS "${WARNING_FLAGS} -Wno-unused-but-set-variable -Wno-unused-variable -Wno-switch")
 endif()
 
 set( CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${WARNING_FLAGS} ${MSVC_FLAGS} -D_REENTRANT" )
