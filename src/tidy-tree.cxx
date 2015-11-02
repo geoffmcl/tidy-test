@@ -23,7 +23,7 @@ static const char *def_log = "temptree.txt";
 static const char *usr_input = 0;
 static int ind_step = 2;
 static const char *def_test = "F:\\Projects\\tidy-html5\\test\\input5\\in_273-3.html";
-static bool debug_on = true;
+static bool debug_on = false;
 static TidyDoc tdoc = 0;
 static TidyBuffer txtbuf;
 static size_t total_txt = 0;
