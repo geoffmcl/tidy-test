@@ -221,7 +221,7 @@ int show_tidy_nodes()
     SPRTF("Processing file '%s', %ld bytes...\n", htmlfil, sz );
 
     tdoc = tidyCreate();
-
+    tidyOptSetBool( tdoc, TidySkipNested, yes );
     status = tidyParseFile( tdoc, htmlfil );
     if ( status >= 0 )
         status = tidyCleanAndRepair( tdoc );
