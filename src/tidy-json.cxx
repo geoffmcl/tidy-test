@@ -43,6 +43,7 @@ static int add_indent = 1;
 static int show_raw_text = 0;
 static const char *indent = "  ";
 static const char *endln = "\n";
+static const char *json_file = "temp.json";
 
 #define MMX_INDENT  1024
 #define flg_needs_comma  0x00001
@@ -57,10 +58,33 @@ int output_node( PJCTX pjcx, TidyNode node, int lev );
 
 void give_help( char *name )
 {
+    printf("\n");
     printf("%s: usage: [options] usr_input\n", module);
+    printf("\n");
     printf("Options:\n");
-    printf(" --help  (-h or -?) = This help and exit(2)\n");
-    // TODO: More help
+    printf(" --help  (-h or -?) = This help and exit(0)\n");
+    printf(" --out <file>  (-o) = Output json to this file. (def=%s)\n", json_file );
+    printf(" --newline     (-n) = Toggle newlines. (def=%s)\n", add_newline ? "on" : "off");
+    printf(" --indent      (-i) = Toggle indenting. (def=%s)\n", add_indent ? "on" : "off");
+    printf(" --space <cnt> (-s) = Set indent spaces. (def=%d)\n", (int)strlen(indent));
+    printf(" Indenting only applied if 'newline' is on.\n");
+
+    printf("\n");
+    printf(" Will load the assumed HTML input file in libtidy, version %s (%s)\n", tidyLibraryVersion(), tidyReleaseDate());
+    printf(" and convert the node tree to a json output.\n");
+    printf("\n");
+}
+
+#define IS_DIGIT(a) (( a >= '0')&&( a <= '9'))
+
+int is_all_digits(char *arg)
+{
+    size_t i, len = strlen(arg);
+    for (i = 0; i < len; i++) {
+        if (!IS_DIGIT(arg[i]))
+            return 0;
+    }
+    return 1;
 }
 
 int parse_args( int argc, char **argv )
@@ -80,6 +104,57 @@ int parse_args( int argc, char **argv )
             case '?':
                 give_help(argv[0]);
                 return 2;
+                break;
+            case 'i':
+                if (add_indent)
+                    add_indent = 0;
+                else
+                    add_indent = 1;
+                break;
+            case 'n':
+                if (add_newline)
+                    add_newline = 0;
+                else
+                    add_newline = 1;
+                break;
+
+            case 'o':
+                if (i2 < argc) {
+                    i++;
+                    sarg = argv[i];
+                    json_file = strdup(sarg);
+                } else {
+                    printf("%s: Expected file name to follow '%s'!\n", module, arg);
+                    return 1;
+                }
+                break;
+            case 's':
+                if (i2 < argc) {
+                    i++;
+                    sarg = argv[i];
+                    if (is_all_digits(sarg)) {
+                        i2 = atoi(sarg);
+                        if (i2) {
+                            indent = (const char *)malloc(i2 + 2);
+                            if (!indent) {
+                                printf("%s: Memory failed for %d bytes!\n", module, i2 + 2);
+                                return 1;
+                            }
+                            memset((void *)indent,0,i2+1);
+                            memset((void *)indent,' ',i2);
+                        } else {
+                            printf("%s: Expected an integer. Not '%s'!\n", module, sarg);
+                            return 1;
+                        }
+                    } else {
+                        printf("%s: Expected an integer. Not '%s'!\n", module, sarg);
+                        return 1;
+                    }
+
+                } else {
+                    printf("%s: Expected space count to follow '%s'!\n", module, arg);
+                    return 1;
+                }
                 break;
             // TODO: Other arguments
             default:
@@ -270,6 +345,30 @@ void add_tbuf_to_json( TidyBuffer *pbuf )
     }
 }
 
+void output_file( PJCTX pjcx, int lev )
+{
+    add_a_comma( pjcx, lev );
+    add_a_newline();
+    add_indent_str(lev);
+
+    json_str += "\"in_file\" : ";
+    json_str += "\"";
+    json_str += usr_input;
+    json_str += "\"";
+
+    pjcx->state[lev] |= flg_needs_comma;
+
+    add_a_comma( pjcx, lev );
+    add_a_newline();
+    add_indent_str(lev);
+
+    json_str += "\"out_file\" : ";
+    json_str += "\"";
+    json_str += json_file;
+    json_str += "\"";
+
+    pjcx->state[lev] |= flg_needs_comma;
+}
 
 //////////////////////////////////////////////////////
 // output a single node
@@ -357,11 +456,14 @@ int output_node( PJCTX pjcx, TidyNode node, int lev )
     return iret;
 }
 
+
 int output_json( PJCTX pjcx, TidyDoc tdoc )
 {
     int iret = 0;
     TidyNode node = tidyGetRoot(tdoc);
     json_str += "{";
+
+    output_file( pjcx, 1 );
 
     iret = output_node(pjcx, node, 1);
 
@@ -371,7 +473,6 @@ int output_json( PJCTX pjcx, TidyDoc tdoc )
     add_a_newline();
 
     size_t len = json_str.size();
-    const char *json_file = "temp.json";
     FILE *fp = fopen(json_file,"w");
     if (fp) {
         size_t res = fwrite(json_str.c_str(),1,len,fp);
