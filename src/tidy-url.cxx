@@ -174,7 +174,7 @@ void showHTTPInput( PHTTPInputSource ps )
 {
     if (ps->pHostName) {
         SPRTF("HostName: '%s', port %d\n", ps->pHostName, ps->nPort );
-        if (ps->pResource)
+        if (ps->pResource && *ps->pResource)
             SPRTF("Resource: '%s'\n", ps->pResource );
     }
 }
