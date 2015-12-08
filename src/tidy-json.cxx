@@ -543,11 +543,11 @@ int main( int argc, char **argv )
 }
 
 // sample code
-auto out_contents( const std::istream &input ) -> void
+void out_contents( const std::istream &input )
 {
     std::ostringstream oss;
     oss << input.rdbuf();
-    const auto file_str = oss.str();    // xml2json( oss.str().data() );
+    const std::string file_str = oss.str();    // xml2json( oss.str().data() );
     std::cout << file_str << std::endl;
 }
 

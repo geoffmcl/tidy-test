@@ -483,7 +483,7 @@ int load_tidy_file2(const char *file, TidyBuffer *pinput)
     }
     std::ostringstream oss;
     oss << ifs.rdbuf();
-    const auto file_str = oss.str();    // get a string
+    const std::string file_str = oss.str();    // get a string
     tidyBufAppend( pinput, (void *)file_str.c_str(), file_str.size() );
     return 0;
 }
@@ -807,7 +807,7 @@ int run_test( std::string &test, int ec )
         config += "cfg_default.txt";
         if (is_file_or_directory(config.c_str()) != MDT_FILE) {
                 SPRTF("%s: Failed to find a config for '%s' in input '%s'!.\n", module,
-                    test.c_str(), input, testlist );
+                    test.c_str(), input );
                 return 2;
 
         }
