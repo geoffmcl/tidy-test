@@ -1126,7 +1126,7 @@ int run_tidy_tests()
     std::ifstream input(file);
     //std::ifstream input = std::ifstream(file);
     if (input.bad() || !input.is_open()) {
-        SPRTF("%s: Unable to open file '%s'!", module, file);
+        SPRTF("%s: Unable to open file '%s'!\n", module, file);
         return 1;
     }
     std::string line;
