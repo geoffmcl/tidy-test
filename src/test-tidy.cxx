@@ -46,20 +46,31 @@ typedef struct tagELIST {
 typedef std::vector<std::string> vSTG;
 typedef std::vector<ELIST> vELIST;
 
-#define TIDY_TEST_ROOT "F:\\Projects\\tidy-html5\\test"
-
 #ifdef WIN32
 #define PATH_SEP "\\"
 #else
 #define PATH_SEP "/"
 #endif
 
+#ifndef TIDY_TEST_ROOT
+#ifdef WIN32
+#define TIDY_TEST_ROOT "F:\\Projects\\tidy-html5\\test"
+#else
+#define TIDY_TEST_ROOT "/home/geoff/projects/html_tidy/tidy-html5/test"
+#endif
+#endif // !TIDY_TEST_ROOT
+
+
 static const char *usr_input = 0;
 static const char *root = TIDY_TEST_ROOT;
-static const char *input = TIDY_TEST_ROOT "\\input";
-static const char *output = TIDY_TEST_ROOT "\\temp-5";
-static const char *testbase = TIDY_TEST_ROOT "\\testbase";
-static const char *testlist = TIDY_TEST_ROOT "\\testcases.txt";
+static const char *input = TIDY_TEST_ROOT PATH_SEP "input";
+#ifdef WIN32
+static const char *output = TIDY_TEST_ROOT PATH_SEP "temp-5";
+#else
+static const char *output = TIDY_TEST_ROOT PATH_SEP "tmp";
+#endif
+static const char *testbase = TIDY_TEST_ROOT PATH_SEP "testbase";
+static const char *testlist = TIDY_TEST_ROOT PATH_SEP "testcases.txt";
 static const char *path_sep = PATH_SEP;
 
 static vSTG vFailed;
