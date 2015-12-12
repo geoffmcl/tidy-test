@@ -1125,19 +1125,23 @@ int run_tidy_tests()
     const char *file = testlist;
     std::ifstream input(file);
     //std::ifstream input = std::ifstream(file);
-    if (input.bad()) {
+    if (input.bad() || !input.is_open()) {
         SPRTF("%s: Unable to open file '%s'!", module, file);
         return 1;
     }
     std::string line;
     std::string test;
     int error_exit;
+    int file_lines = 0;
+    int valid_lines = 0;
     while (std::getline(input, line)) {
+        file_lines++;
         vSTG vstg = split_whitespace( line, 0 );
         if (vstg.size() != 2) {
             // forgive and forget
             continue;
         }
+        valid_lines++;
         test = vstg[0];
         error_exit = atoi(vstg[1].c_str());
         current_test = test;
@@ -1162,6 +1166,11 @@ int run_tidy_tests()
     }
 
     input.close();
+    SPRTF("%s: Processed %d line from '%s', ran %d tests.\n", module, file_lines, file, valid_lines);
+    if (valid_lines == 0) {
+        SPRTF("%s: Warning, no tests run...\n", module );
+        return 1;
+    }
     // failed report
     if (iret == 0) {
         size_t ii, max = vFailed.size();
