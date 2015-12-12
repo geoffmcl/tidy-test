@@ -31,7 +31,20 @@
 
 static const char *module = "test-tidy";
 
+
+typedef struct tagELIST {
+    int flag;
+    std::string test;
+    int used;
+    int ec;
+    std::string html;
+    std::string config;
+    std::string basemsg;
+    std::string baseout;
+}ELIST, *PELIST;
+
 typedef std::vector<std::string> vSTG;
+typedef std::vector<ELIST> vELIST;
 
 #define TIDY_TEST_ROOT "F:\\Projects\\tidy-html5\\test"
 
@@ -50,10 +63,12 @@ static const char *testlist = TIDY_TEST_ROOT "\\testcases.txt";
 static const char *path_sep = PATH_SEP;
 
 static vSTG vFailed;
+static vELIST vExceptions;
 
 static std::string current_test;
 static int current_itest = 0;
 static int current_exit_code = 0;
+static const char *exceptions = "445557:500236:647255:649812:658230";
 
 #define MMX_STATIC 1024
 static char _static_buff[MMX_STATIC+4];
@@ -68,6 +83,55 @@ static char _static_buff[MMX_STATIC+4];
   SNPRINTF(_static_buff, MMX_STATIC, a, b); \
   vFailed.push_back(_static_buff); \
   SPRTF("%s: %s",module,_static_buff); \
+}
+
+// FORWARD REFS
+vSTG string_split( const std::string& str, const char* sep = 0, int maxsplit = 0 );
+int addException( std::string &test, int ec = -1, std::string html = "", std::string config = "", std::string basemsg = "", std::string baseout = "");
+
+int isException( std::string &test, size_t *poff )
+{
+    size_t ii, max = vExceptions.size();
+    PELIST pe;
+    for (ii = 0; ii < max; ii++) {
+        pe = &vExceptions[ii];
+        std::string s = pe->test;
+        if (test == s) {
+            pe->used++;
+            *poff = ii; // return offset of exception
+            return 1;
+        }
+    }
+    return 0;
+}
+
+int addException( std::string &test, int ec, std::string html, std::string config, std::string basemsg, std::string baseout )
+{
+    int iret = 0;
+    size_t off = (size_t)-1;
+    if (!isException(test, &off)) {
+        ELIST el;
+        el.test = test;
+        el.used = 0;
+        el.ec = ec;
+        el.html = html;
+        el.config = config;
+        el.basemsg = basemsg;
+        el.baseout = baseout;
+        vExceptions.push_back(el);
+        iret = 1;
+    }
+    return iret;
+}
+
+void AddExeptionList()
+{
+    vSTG v = string_split( exceptions, ":" );
+    size_t ii, max = v.size();
+    for (ii = 0; ii < max; ii++) {
+        std::string s = v[ii];
+        addException(s);
+    }
 }
 
 void give_help( char *name )
@@ -114,6 +178,8 @@ int parse_args( int argc, char **argv )
     //    SPRTF("%s: No user input found in command!\n", module);
     //    return 1;
     //}
+
+    AddExeptionList();
     return 0;
 }
 
@@ -154,6 +220,7 @@ vSTG split_whitespace( const std::string &str, int maxsplit )
 /**
   * split a string per a separator - if no sep, use space - split_whitespace 
   */
+
 vSTG string_split( const std::string& str, const char* sep, int maxsplit )
 {
     if (sep == 0)
@@ -185,6 +252,7 @@ vSTG string_split( const std::string& str, const char* sep, int maxsplit )
 	result.push_back( str.substr(j,len-j) );
 	return result;
 }
+
 
 ///////////////////////////////////////////////////////////////
 #ifdef _MSC_VER
@@ -734,7 +802,7 @@ Bool  tidyBufferCompare( TidyBuffer *pout, TidyBuffer *pbase, const char *msg )
 
         if (c != d) {
             if (res) {
-                SPRTF("%s: Test %s: First difference noted, line base %d %02x, in %d %02x\n", module,
+                SPRTF("%s: Test %s: First difference noted, line base %d = 0x%02x, in %d = 0x%02x\n", module,
                     (msg ? msg : "Unknown"), line_base, c, line_out, d );
                 // base j
                 TidyBuffer info;
@@ -888,31 +956,36 @@ exit:
     return iret;
 }
 
-static std::string basehtml;
-static std::string basemsg;
-static std::string html;
-static std::string config;
 
-int run_test( std::string &test, int ec )
+static ELIST _s_elist;
+
+int getBaseHtml( std::string &test, int ec, std::string &baseout, int verb )
 {
     int iret = 0;
-    basehtml = testbase;
-    basehtml += path_sep;
-    basehtml += "out_";
-    basehtml += test;
-    basehtml += ".html";
-    if (is_file_or_directory(basehtml.c_str()) != MDT_FILE) {
+    baseout = testbase;
+    baseout += path_sep;
+    baseout += "out_";
+    baseout += test;
+    baseout += ".html";
+    if (is_file_or_directory(baseout.c_str()) != MDT_FILE) {
         if (ec == 2) {
-            basehtml = "";
+            baseout = "";
         } else if ((test == "431895")||(test == "431958")) {
-            basehtml = "";  // seems EXCEPTION - 1. is the emac test anyway 2 is writeback -m WHAT!!! modifies input
+            baseout = "";  // seems EXCEPTION - 1. is the emac test anyway 2 is writeback -m WHAT!!! modifies input
         } else {
-            SPRTF("%s: Failed to find a output for '%s' in testbase '%s'!.\n", module,
+            if (verb) {
+                SPRTF("%s: Failed to find a output for '%s' in testbase '%s'!.\n", module,
                     test.c_str(), testbase );
-            return -1;  // FAILED!!!
+            }
+            iret = -1;  // FAILED!!!
         }
     }
+    return iret;
+}
 
+int getBaseMsg( std::string &test, int ec, std::string &basemsg, int verb )
+{
+    int iret = 0;
     basemsg = testbase;
     basemsg += path_sep;
     basemsg += "msg_";
@@ -921,9 +994,14 @@ int run_test( std::string &test, int ec )
     if (is_file_or_directory(basemsg.c_str()) != MDT_FILE) {
         SPRTF("%s: Failed to find a message for '%s' in testbase '%s'!.\n", module,
                     test.c_str(), testbase );
-        return -1;  // FAILED!!!
+        iret = -1;  // FAILED!!!
     }
+    return iret;
+}
 
+int getInputHtml( std::string &test, int ec, std::string &html, int verb )
+{
+    int iret = 0;
     std::string in_file = input;
     in_file += path_sep;
     in_file += "in_";
@@ -937,13 +1015,21 @@ int run_test( std::string &test, int ec )
             html = in_file;
             html += ".html";
             if (is_file_or_directory(html.c_str()) != MDT_FILE) {
-                SPRTF("%s: Failed to find test '%s' in input '%s'! Tried xhtml, xml, html.\nRemove test from '%s\n", module,
-                    test.c_str(), input, testlist );
-                return -1;  // FAILED!!!
+                if (verb) {
+                    SPRTF("%s: Failed to find test '%s' in input '%s'! Tried xhtml, xml, html.\nRemove test from '%s\n", module,
+                        test.c_str(), input, testlist );
+                }
+                iret = -1;  // FAILED!!!
             }
         }
     }
-    in_file = input;
+    return iret;
+}
+
+int getConfig( std::string &test, int ec, std::string &config, int verb )
+{
+    int iret = 0;
+    std::string in_file = input;
     in_file += path_sep;
     config = in_file;
     config += "cfg_";
@@ -953,12 +1039,78 @@ int run_test( std::string &test, int ec )
         config = in_file;
         config += "cfg_default.txt";
         if (is_file_or_directory(config.c_str()) != MDT_FILE) {
+            if (verb) {
                 SPRTF("%s: Failed to find a config for '%s' in input '%s'!.\n", module,
                     test.c_str(), input );
-            return -1;  // FAILED!!!
+            }
+            iret = -1;  // FAILED!!!
         }
     }
+    return iret;
+}
 
+// flailed flags
+#define ff_NoBaseHtml  0x001
+#define ff_NoBaseMsg   0x002
+#define ff_NoInputHtm  0x004
+#define ff_NoConfig    0x008
+
+int get_test_files( PELIST pel, std::string &test, int ec, int verb )
+{
+    int flag = 0;
+
+    std::string basehtml;
+    std::string basemsg;
+    std::string html;
+    std::string config;
+
+    if (getBaseHtml( test, ec, basehtml, verb ))
+        flag |= ff_NoBaseHtml;  // FAILED!!!
+
+    if (getBaseMsg( test, ec, basemsg, verb ))
+        flag |= ff_NoBaseMsg;  // FAILED!!!
+
+    if (getInputHtml( test, ec, html, verb ))
+        flag |= ff_NoInputHtm;  // FAILED!!!
+
+    if (getConfig( test, ec, config, verb ))
+        flag |= ff_NoConfig;  // FAILED!!!
+
+    if (!pel)
+        pel = &_s_elist;
+    pel->flag = flag;
+    pel->test = test;
+    pel->ec   = ec;
+    pel->used = 0;
+    pel->html = html;
+    pel->config = config;
+    pel->baseout = basehtml;
+    pel->basemsg = basemsg;
+
+    return flag;
+}
+
+int run_test( std::string &test, int ec )
+{
+    int iret = 0;
+    PELIST pel = &_s_elist;
+    iret = get_test_files( pel, test, ec, 0 );
+    std::string basehtml;
+    std::string basemsg;
+    std::string html;
+    std::string config;
+
+    if (getBaseHtml( test, ec, basehtml, 1 ))
+        return -1;  // FAILED!!!
+
+    if (getBaseMsg( test, ec, basemsg, 1 ))
+        return -1;  // FAILED!!!
+
+    if (getInputHtml( test, ec, html, 1 ))
+        return -1;  // FAILED!!!
+
+    if (getConfig( test, ec, config, 1 ))
+        return -1;  // FAILED!!!
 
     // Got input, a config, a base msg, and maybe a basehtml - RUN THE TEST
     iret = run_tidy_test( test, ec, html, config, basemsg, basehtml );
