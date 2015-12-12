@@ -60,17 +60,17 @@ typedef std::vector<ELIST> vELIST;
 #endif
 #endif // !TIDY_TEST_ROOT
 
-
+static int do_all_inputs = 1;
 static const char *usr_input = 0;
 static const char *root = TIDY_TEST_ROOT;
 static const char *input = TIDY_TEST_ROOT PATH_SEP "input";
+static const char *testlist = TIDY_TEST_ROOT PATH_SEP "testcases.txt";
 #ifdef WIN32
 static const char *output = TIDY_TEST_ROOT PATH_SEP "temp-5";
 #else
 static const char *output = TIDY_TEST_ROOT PATH_SEP "tmp";
 #endif
 static const char *testbase = TIDY_TEST_ROOT PATH_SEP "testbase";
-static const char *testlist = TIDY_TEST_ROOT PATH_SEP "testcases.txt";
 static const char *path_sep = PATH_SEP;
 
 static vSTG vFailed;
@@ -96,10 +96,44 @@ static char _static_buff[MMX_STATIC+4];
   SPRTF("%s: %s",module,_static_buff); \
 }
 
+/////////////////////////////////////////////////////////////////////////
 // FORWARD REFS
 vSTG string_split( const std::string& str, const char* sep = 0, int maxsplit = 0 );
 int addException( std::string &test, int ec = -1, std::string html = "", std::string config = "", std::string basemsg = "", std::string baseout = "");
+void give_help( char *name );
+int parse_args( int argc, char **argv );
+/////////////////////////////////////////////////////////////////////////
 
+static void reset_input_to_root()
+{
+    std::string path;
+    path = root;
+    path += PATH_SEP;
+
+    std::string in;
+
+    in = path;
+    in += "input";
+    input = strdup(in.c_str());
+
+    in = path;
+    in += "testcases.txt";
+    testlist = strdup(in.c_str());
+
+    in = path;
+#ifdef WIN32
+    in += "temp-5";
+#else
+    in += "tmp";
+#endif
+    output = strdup(in.c_str());
+
+    in = path;
+    in += "testbase";
+    testbase = strdup(in.c_str());
+}
+
+// check if test is in the exceptions
 int isException( std::string &test, size_t *poff )
 {
     size_t ii, max = vExceptions.size();
@@ -143,55 +177,6 @@ void AddExeptionList()
         std::string s = v[ii];
         addException(s);
     }
-}
-
-void give_help( char *name )
-{
-    SPRTF("%s: usage: [options] usr_input\n", module);
-    SPRTF("Options:\n");
-    SPRTF(" --help  (-h or -?) = This help and exit(2)\n");
-    // TODO: More help
-}
-
-int parse_args( int argc, char **argv )
-{
-    int i,i2,c;
-    char *arg, *sarg;
-    for (i = 1; i < argc; i++) {
-        arg = argv[i];
-        i2 = i + 1;
-        if (*arg == '-') {
-            sarg = &arg[1];
-            while (*sarg == '-')
-                sarg++;
-            c = *sarg;
-            switch (c) {
-            case 'h':
-            case '?':
-                give_help(argv[0]);
-                return 2;
-                break;
-            // TODO: Other arguments
-            default:
-                SPRTF("%s: Unknown argument '%s'. Try -? for help...\n", module, arg);
-                return 1;
-            }
-        } else {
-            // bear argument
-            if (usr_input) {
-                SPRTF("%s: Already have input '%s'! What is this '%s'?\n", module, usr_input, arg );
-                return 1;
-            }
-            usr_input = strdup(arg);
-        }
-    }
-    //if (!usr_input) {
-    //    SPRTF("%s: No user input found in command!\n", module);
-    //    return 1;
-    //}
-
-    AddExeptionList();
-    return 0;
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -836,7 +821,7 @@ Bool  tidyBufferCompare( TidyBuffer *pout, TidyBuffer *pbase, const char *msg )
                 while (first < (int)pbase->size) {
                     d = tidyBufGetByte( pbase );
                     if (d < ' ') {
-                        d = '.';
+                        d = '?';
                     }
                     tidyBufPutByte( &info, d );
                     first++;
@@ -858,7 +843,7 @@ Bool  tidyBufferCompare( TidyBuffer *pout, TidyBuffer *pbase, const char *msg )
                 while (nout < (int)pout->size) {
                     c = tidyBufGetByte( pout );
                     if (c < ' ') {
-                        c = '.';
+                        c = '?';
                     }
                     tidyBufPutByte( &info, c );
                     nout++;
@@ -875,7 +860,108 @@ Bool  tidyBufferCompare( TidyBuffer *pout, TidyBuffer *pbase, const char *msg )
     return res; /* they are the SAME */
 }
 
-int run_tidy_test( std::string &test, int ec, std::string &html, std::string &config, std::string &basemsg, std::string &baseout )
+int run_tidy_test( PELIST pel  )
+{
+    int rc, status, iret = 0;
+
+    TidyDoc tdoc = tidyCreate();
+    if (!tdoc) {
+        SPRTF("%s: tidyCreate() failed!\n", module );
+        return 1;
+    }
+
+    std::string test = pel->test;
+    int ec = pel->ec;
+    std::string html = pel->html;
+    std::string config = pel->config;
+    std::string basemsg = pel->basemsg;
+    std::string baseout = pel->baseout;
+
+    TidyBuffer m_errbuf, m_output, m_input;
+    tidyBufInit( &m_errbuf );
+    tidyBufInit( &m_output );
+
+    rc = tidySetErrorBuffer( tdoc, &m_errbuf );
+    if (rc) {
+        SPRTF("%s: Failed to set error buffer!\n", module );
+        iret = 1;
+        goto exit;
+    }
+
+    if (!tidyOptParseValue( tdoc, "tidy-mark", "no" )) {
+        SPRTF("%s: Failed tidyOptParseValue( tdoc, \"tidy-mark\", \"no\" )!", module);
+        iret = 1;
+        goto exit;
+    }
+
+    status = tidyLoadConfig( tdoc, config.c_str() );
+    if ( status != 0 )
+        SPRTF("%s: Loading config file \"%s\" failed, err = %d, test = %s\n", module, config.c_str(), status, test.c_str());
+
+    status = tidyParseFile( tdoc, html.c_str() );
+    if ( status >= 0 ) {
+        status = tidyCleanAndRepair( tdoc );
+    } else {
+        SPRTF("%s: Test %s: Failed to load '%s'!\n", module, test.c_str(), html.c_str());
+        iret = 1;
+        goto exit;
+    }
+    if ( status >= 0 ) {
+        status = tidyRunDiagnostics( tdoc );
+    } else {
+        SPRTF("%s: Test %s: Failed tidyCleanAndRepair()!\n", module, test.c_str() );
+        iret = 1;
+        goto exit;
+    }
+    if ( status >= 0 ) {
+        rc = tidySaveBuffer( tdoc, &m_output );          // Pretty Print
+        if ( rc >= 0 ) {
+            if ( rc > 0 ) {
+                // SPRTF( "\nDiagnostics:\n\n%s", m_errbuf.bp );
+            } else {
+
+            }
+        }
+        int got = 0;
+        int contentErrors   = tidyErrorCount( tdoc );
+        int contentWarnings = tidyWarningCount( tdoc );
+        int accessWarnings  = tidyAccessWarningCount( tdoc );
+        if (contentErrors) {
+            got = 2;
+        } else if (contentWarnings) {
+            got = 1;
+        }
+        if (ec != got) {
+            SPRTF("%s: Test %s: Failed to get same exit indication! got %d, expected %d\n", module, test.c_str(), got, ec );
+        }
+        if (baseout.size()) {
+            tidyBufInit( &m_input );
+            if (load_tidy_file( baseout.c_str(), &m_input )) {
+                SPRTF("%s: Test %s: Failed to load base html '%s'!\n", module, test.c_str(), baseout.c_str() );
+            } else {
+                if (!tidyBufferCompare( &m_output, &m_input, test.c_str() )) {
+                    SPRTF1("Difference for test '%s'!\n", test.c_str() );
+                }
+            }
+        }
+
+    } else {
+        SPRTF("%s: Failed tidyRunDiagnositicsr()!\n", module);
+        iret = 1;
+        goto exit;
+
+    }
+
+
+exit:
+    tidyBufFree( &m_errbuf );
+    tidyBufFree( &m_output );
+    tidyRelease( tdoc ); /* called to free hash tables etc. */
+
+    return iret;
+}
+
+int run_tidy_test_org( std::string &test, int ec, std::string &html, std::string &config, std::string &basemsg, std::string &baseout )
 {
     int rc, status, iret = 0;
     TidyDoc tdoc = tidyCreate();
@@ -966,7 +1052,6 @@ exit:
 
     return iret;
 }
-
 
 static ELIST _s_elist;
 
@@ -1089,6 +1174,7 @@ int get_test_files( PELIST pel, std::string &test, int ec, int verb )
 
     if (!pel)
         pel = &_s_elist;
+
     pel->flag = flag;
     pel->test = test;
     pel->ec   = ec;
@@ -1105,7 +1191,11 @@ int run_test( std::string &test, int ec )
 {
     int iret = 0;
     PELIST pel = &_s_elist;
-    iret = get_test_files( pel, test, ec, 0 );
+    iret = get_test_files( pel, test, ec, 1 );
+    if (iret)
+        return iret;
+
+#if 0   // 000000000000000000000000000000000000000000000000
     std::string basehtml;
     std::string basemsg;
     std::string html;
@@ -1125,6 +1215,9 @@ int run_test( std::string &test, int ec )
 
     // Got input, a config, a base msg, and maybe a basehtml - RUN THE TEST
     iret = run_tidy_test( test, ec, html, config, basemsg, basehtml );
+#endif // 000000000000000000000000000000000000000000000000
+
+    iret = run_tidy_test( pel );
 
     return iret;
 }
@@ -1213,5 +1306,152 @@ int main( int argc, char **argv )
     return iret;
 }
 
+
+int parse_args( int argc, char **argv )
+{
+    int i,i2,c;
+    char *arg, *sarg;
+    for (i = 1; i < argc; i++) {
+        arg = argv[i];
+        i2 = i + 1;
+        if (*arg == '-') {
+            sarg = &arg[1];
+            while (*sarg == '-')
+                sarg++;
+            c = *sarg;
+            switch (c) {
+            case 'h':
+            case '?':
+                give_help(argv[0]);
+                return 2;
+                break;
+            case 'r':
+                if (i2 < argc) {
+                    i++;
+                    sarg = argv[i];
+                    if (is_file_or_directory(sarg) == MDT_DIR) {
+                        root = strdup(sarg);
+                        if (do_all_inputs)
+                            reset_input_to_root();
+                    } else {
+                        SPRTF("%s: Error: Path %s is not valid!\n", module, sarg );
+                        return 1;
+                    }
+                } else {
+                    SPRTF("%s: Error: Expected a path to follow %s!\n", module, arg );
+                    return 1;
+                }
+                break;
+            case 'l':
+                if (i2 < argc) {
+                    i++;
+                    sarg = argv[i];
+                    if (is_file_or_directory(sarg) == MDT_FILE) {
+                        testlist = strdup(sarg);
+                    } else {
+                        SPRTF("%s: Error: File %s is not valid!\n", module, sarg );
+                        return 1;
+                    }
+                } else {
+                    SPRTF("%s: Error: Expected a file to follow %s!\n", module, arg );
+                    return 1;
+                }
+                break;
+            case 'i':
+                if (i2 < argc) {
+                    i++;
+                    sarg = argv[i];
+                    if (is_file_or_directory(sarg) == MDT_DIR) {
+                        input = strdup(sarg);
+                    } else {
+                        SPRTF("%s: Error: Path %s is not valid!\n", module, sarg );
+                        return 1;
+                    }
+                } else {
+                    SPRTF("%s: Error: Expected a path to follow %s!\n", module, arg );
+                    return 1;
+                }
+                break;
+            case 'o':
+                if (i2 < argc) {
+                    i++;
+                    sarg = argv[i];
+                    if (is_file_or_directory(sarg) == MDT_DIR) {
+                        output = strdup(sarg);
+                    } else {
+                        SPRTF("%s: Error: Path %s is not valid!\n", module, sarg );
+                        return 1;
+                    }
+                } else {
+                    SPRTF("%s: Error: Expected a path to follow %s!\n", module, arg );
+                    return 1;
+                }
+                break;
+            case 't':
+                if (i2 < argc) {
+                    i++;
+                    sarg = argv[i];
+                    if (is_file_or_directory(sarg) == MDT_DIR) {
+                        testbase = strdup(sarg);
+                    } else {
+                        SPRTF("%s: Error: Path %s is not valid!\n", module, sarg );
+                        return 1;
+                    }
+                } else {
+                    SPRTF("%s: Error: Expected a path to follow %s!\n", module, arg );
+                    return 1;
+                }
+                break;
+
+            // TODO: Other arguments
+            default:
+                SPRTF("%s: Unknown argument '%s'. Try -? for help...\n", module, arg);
+                return 1;
+            }
+        } else {
+            // bear argument - do what with this??????
+            //if (usr_input) {
+            //    SPRTF("%s: Already have input '%s'! What is this '%s'?\n", module, usr_input, arg );
+            //    return 1;
+            //}
+            usr_input = strdup(arg);
+            SPRTF("%s: Unknown command! What is this '%s'?\n", module, arg );
+            return 1;
+        }
+    }
+    //if (!usr_input) {
+    //    SPRTF("%s: No user input found in command!\n", module);
+    //    return 1;
+    //}
+
+    AddExeptionList();
+    return 0;
+}
+
+#define ISDIR(a) ((is_file_or_directory(a) == MDT_DIR) ? "ok" : "NF")
+#define ISFILE(a) ((is_file_or_directory(a) == MDT_FILE) ? "ok" : "NF")
+
+void give_help( char *name )
+{
+    SPRTF("%s: usage: [options] usr_input\n", module);
+    SPRTF("Options:\n");
+    SPRTF(" --help      (-h or -?) = This help and exit(2)\n");
+    SPRTF(" --root <path>     (-r) = Set the root path to the Tidy test suite.\n");
+    SPRTF(" --list <file>     (-l) = Set the input list file.\n");
+    SPRTF(" --input <path>    (-i) = Set the root path to the Tidy test input files.\n");
+    SPRTF(" --output <path>   (-o) = Set the root path to the Tidy current test output files.\n");
+    SPRTF(" --testbase <path> (-t) = Set the root path to the Tidy testbase compare files.\n");
+    
+    SPRTF("\n");
+    SPRTF("Defaults:\n");
+    SPRTF(" --root %s %s\n", root, ISDIR(root));
+    SPRTF(" --list %s %s\n", testlist, ISFILE(testlist)); // = TIDY_TEST_ROOT PATH_SEP "testcases.txt";
+    SPRTF(" --input %s %s\n", input, ISDIR(input)); // = TIDY_TEST_ROOT PATH_SEP "input";
+    SPRTF(" --output %s %s\n", output, ISDIR(output)); // = TIDY_TEST_ROOT PATH_SEP "temp-5";
+    SPRTF(" --testbase %s %s\n", testbase, ISDIR(testbase) );   // = TIDY_TEST_ROOT PATH_SEP "testbase";
+
+    SPRTF("\n");
+    // TODO: More help
+}
 
 // eof = test-tidy.cxx
