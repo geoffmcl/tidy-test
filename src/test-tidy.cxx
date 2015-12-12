@@ -13,6 +13,9 @@
 \*/
 #include <sys/types.h>
 #include <sys/stat.h>
+#ifdef _MSC_VER
+#include <WinSock2.h>   // which include Windows.h
+#endif
 #include <stdio.h>
 #include <string.h> // for strdup(), ...
 #include <tidy.h>
@@ -22,7 +25,6 @@
 #include <sstream>
 #include <fstream>
 #include <vector>
-
 #ifndef SPRTF
 #define SPRTF printf
 #endif
@@ -47,8 +49,26 @@ static const char *testbase = TIDY_TEST_ROOT "\\testbase";
 static const char *testlist = TIDY_TEST_ROOT "\\testcases.txt";
 static const char *path_sep = PATH_SEP;
 
+static vSTG vFailed;
+
 static std::string current_test;
+static int current_itest = 0;
 static int current_exit_code = 0;
+
+#define MMX_STATIC 1024
+static char _static_buff[MMX_STATIC+4];
+
+#ifdef _MSC_VER
+#define SNPRINTF _snprintf
+#else
+#define SNPRINTF snprintf
+#endif
+
+#define SPRTF1(a,b) {   \
+  SNPRINTF(_static_buff, MMX_STATIC, a, b); \
+  vFailed.push_back(_static_buff); \
+  SPRTF("%s: %s",module,_static_buff); \
+}
 
 void give_help( char *name )
 {
@@ -544,6 +564,131 @@ Bool getUTF8Seq( uint ch, int *count )
     return hasError ? no : yes;
 }
 
+////////////////////////////////////////////////////////////////////
+//// from : http://stackoverflow.com/questions/2948308/how-do-i-read-utf-8-characters-via-a-pointer
+//// for Widows/MSVC needs #include <Winsock2.h>
+
+#define IS_IN_RANGE(c, f, l)    (((c) >= (f)) && ((c) <= (l)))
+
+//u_long readNextChar(char *& p, int len) 
+int getNextSeqLen(char *& p, int len, u_long *puc) 
+{  
+    u_char c1, c2, *ptr = (u_char *) p;
+    u_long uc = 0;
+    int seqlen = 0;
+    int datalen = len; // available length of p ...;    
+
+    if( datalen < 1 )
+    {
+        // malformed data, do something !!!
+        return -1;
+    }
+
+    c1 = ptr[0];    // get FIRST character - 8-bits
+
+    if( (c1 & 0x80) == 0 )
+    {
+        // no high bit set, is just ASCII
+        uc = (u_long) (c1 & 0x7F);
+        seqlen = 1;
+    }
+    else if( (c1 & 0xE0) == 0xC0 )
+    {
+        uc = (u_long) (c1 & 0x1F);
+        seqlen = 2;
+    }
+    else if( (c1 & 0xF0) == 0xE0 )
+    {
+        uc = (u_long) (c1 & 0x0F);
+        seqlen = 3;
+    }
+    else if( (c1 & 0xF8) == 0xF0 )
+    {
+        uc = (u_long) (c1 & 0x07);
+        seqlen = 4;
+    }
+    else
+    {
+        // malformed data, do something !!!
+        return -1;
+    }
+
+    if( seqlen > datalen )
+    {
+        // malformed data, do something !!!
+        return -1;
+    }
+
+    for(int i = 1; i < seqlen; ++i)
+    {
+        c1 = ptr[i];
+
+        if( (c1 & 0xC0) != 0x80 )
+        {
+            // malformed data, do something !!!
+            return -1;
+        }
+    }
+
+    switch( seqlen )
+    {
+        case 2:
+        {
+            c1 = ptr[0];
+
+            if( !IS_IN_RANGE(c1, 0xC2, 0xDF) )
+            {
+                // malformed data, do something !!!
+                return -1;
+            }
+
+            break;
+        }
+
+        case 3:
+        {
+            c1 = ptr[0];
+            c2 = ptr[1];
+
+            if( ((c1 == 0xE0) && !IS_IN_RANGE(c2, 0xA0, 0xBF)) ||
+                ((c1 == 0xED) && !IS_IN_RANGE(c2, 0x80, 0x9F)) ||
+                (!IS_IN_RANGE(c1, 0xE1, 0xEC) && !IS_IN_RANGE(c1, 0xEE, 0xEF)) )
+            {
+                // malformed data, do something !!!
+                return -1;
+            }
+
+            break;
+        }
+
+        case 4:
+        {
+            c1 = ptr[0];
+            c2 = ptr[1];
+
+            if( ((c1 == 0xF0) && !IS_IN_RANGE(c2, 0x90, 0xBF)) ||
+                ((c1 == 0xF4) && !IS_IN_RANGE(c2, 0x80, 0x8F)) ||
+                !IS_IN_RANGE(c1, 0xF1, 0xF3) )
+            {
+                // malformed data, do something !!!
+                return -1;
+            }
+
+            break;
+        }
+    }
+
+    for(int i = 1; i < seqlen; ++i)
+    {
+        uc = ((uc << 6) | (u_long)(ptr[i] & 0x3F));
+    }
+    *puc = uc;      // unicodeChar???
+    p += seqlen;
+    return seqlen;  // unicodeChar; 
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
 Bool  tidyBufferCompare( TidyBuffer *pout, TidyBuffer *pbase, const char *msg )
 {
     Bool res = yes;
@@ -561,6 +706,8 @@ Bool  tidyBufferCompare( TidyBuffer *pout, TidyBuffer *pbase, const char *msg )
     int line_out = 0;
 
     for (i = 0, j = 0; (i < pout->size) && (j < pbase->size); i++, j++) {
+        // ******************************************************************
+        // this has to be different when comparing utf-8 sequences
         po = &pout->bp[i];
         c = *po;
         pi = &pbase->bp[j];
@@ -720,7 +867,7 @@ int run_tidy_test( std::string &test, int ec, std::string &html, std::string &co
                 SPRTF("%s: Test %s: Failed to load base html '%s'!\n", module, test.c_str(), baseout.c_str() );
             } else {
                 if (!tidyBufferCompare( &m_output, &m_input, test.c_str() )) {
-                    SPRTF("%s: Difference for test '%s'!\n", module, test.c_str() );
+                    SPRTF1("Difference for test '%s'!\n", test.c_str() );
                 }
             }
         }
@@ -762,7 +909,7 @@ int run_test( std::string &test, int ec )
         } else {
             SPRTF("%s: Failed to find a output for '%s' in testbase '%s'!.\n", module,
                     test.c_str(), testbase );
-            return 1;
+            return -1;  // FAILED!!!
         }
     }
 
@@ -774,7 +921,7 @@ int run_test( std::string &test, int ec )
     if (is_file_or_directory(basemsg.c_str()) != MDT_FILE) {
         SPRTF("%s: Failed to find a message for '%s' in testbase '%s'!.\n", module,
                     test.c_str(), testbase );
-        return 1;
+        return -1;  // FAILED!!!
     }
 
     std::string in_file = input;
@@ -792,7 +939,7 @@ int run_test( std::string &test, int ec )
             if (is_file_or_directory(html.c_str()) != MDT_FILE) {
                 SPRTF("%s: Failed to find test '%s' in input '%s'! Tried xhtml, xml, html.\nRemove test from '%s\n", module,
                     test.c_str(), input, testlist );
-                return 1;
+                return -1;  // FAILED!!!
             }
         }
     }
@@ -808,13 +955,12 @@ int run_test( std::string &test, int ec )
         if (is_file_or_directory(config.c_str()) != MDT_FILE) {
                 SPRTF("%s: Failed to find a config for '%s' in input '%s'!.\n", module,
                     test.c_str(), input );
-                return 2;
-
+            return -1;  // FAILED!!!
         }
     }
 
 
-    // Got input and a config 
+    // Got input, a config, a base msg, and maybe a basehtml - RUN THE TEST
     iret = run_tidy_test( test, ec, html, config, basemsg, basehtml );
 
     return iret;
@@ -822,6 +968,8 @@ int run_test( std::string &test, int ec )
 
 int run_tidy_tests()
 {
+    int iret = 0;
+    int res = 0;
     const char *file = testlist;
     std::ifstream input(file);
     //std::ifstream input = std::ifstream(file);
@@ -830,18 +978,25 @@ int run_tidy_tests()
         return 1;
     }
     std::string line;
+    std::string test;
+    int error_exit;
     while (std::getline(input, line)) {
         vSTG vstg = split_whitespace( line, 0 );
         if (vstg.size() != 2) {
             // forgive and forget
             continue;
         }
-        std::string test = vstg[0];
-        int error_exit = atoi(vstg[1].c_str());
+        test = vstg[0];
+        error_exit = atoi(vstg[1].c_str());
         current_test = test;
+        current_itest = atoi(test.c_str());
         current_exit_code = error_exit;
 
-        if (run_test( test, error_exit )) {
+        res = run_test( test, error_exit );
+
+        if (res < 0) {
+            fprintf(stderr, "%s: Bad test '%s' failure!\n", module, test.c_str() );
+            iret = 1;
             break;
         }
 
@@ -855,7 +1010,18 @@ int run_tidy_tests()
     }
 
     input.close();
-    return 0;
+    // failed report
+    if (iret == 0) {
+        size_t ii, max = vFailed.size();
+        if (max) {
+            SPRTF("%s: List of %d tests that failed:\n", module, (int)max);
+            for (ii = 0; ii < max; ii++) {
+                test = vFailed[ii];
+                SPRTF("%s", test.c_str());
+            }
+        }
+    }
+    return iret;
 
 }
 
