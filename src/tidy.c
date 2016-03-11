@@ -45,7 +45,7 @@ static Bool samefile( ctmbstr filename1, ctmbstr filename2 )
 /**
  **  Handles exit cleanup.
  */
-static void tidy_cleanup()
+static void tidy_cleanup(void)
 {
 #if defined(_WIN32)
     /* Restore original Windows code page. */
@@ -1536,6 +1536,7 @@ int main( int argc, char** argv )
     TidyDoc tdoc = tidyCreate();
     int status = 0;
     tmbstr locale = NULL;
+    ctmbstr lang;
 
     uint contentErrors = 0;
     uint contentWarnings = 0;
@@ -1943,8 +1944,16 @@ int main( int argc, char** argv )
             continue;
         }
 
+        /* Gets the current language used by Tidy. */
+        lang = tidyGetLanguage();
+        if (lang) {
+            printf("tidyGetLanguage returned '%s'\n", lang);
+        } else {
+            printf("tidyGetLanguage returned 'NULL'!\n" );
+        }
         if ( argc > 1 )
         {
+
             htmlfil = argv[1];
 #if (!defined(NDEBUG) && defined(_MSC_VER))
             SPRTF("Tidying '%s'\n", htmlfil);
