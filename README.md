@@ -1,4 +1,4 @@
-# tidy-test 20151101
+# tidy-test 20160311
 
 Some simple test cases using a cmake FindTidy.cmake module to find libtidy as a 3rdParty library, and then using the Tidy API.
 
@@ -49,6 +49,6 @@ All input and output is using a `TidyBuffer`, so includes `<tidybuffio.h>`. **NO
 Enjoy.
 
 Geoff  
-20151101 - 20151011 - 20150701 - 20150610 - 20150520
+20160311 - 20151101 - 20151011 - 20150701 - 20150610 - 20150520
 
 ; eof
