@@ -12,4 +12,5 @@ sample
 test-get-options
 test-tidy
 tidy-json
+tidy-test-prev
 
