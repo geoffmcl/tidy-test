@@ -96,6 +96,8 @@ if (CURL_STATICLIB)
     endif ()
 endif ()
 
+add_definitions( -DTIDY_TEST )
+
 # configuration file, if needed
 # configure_file( ${CMAKE_SOURCE_DIR}/config.h.cmake ${CMAKE_BINARY_DIR}/config.h )
 # add_definitions( -DHAVE_CONFIG_H )
@@ -146,6 +148,24 @@ set(dir src)
 set(${name}_SRCS
     ${dir}/tidy.c
     )
+set(${name}_HDRS
+    ${dir}/language.h
+    )
+add_executable( ${name} ${${name}_SRCS} ${${name}_HDRS} )
+if (add_LIBS)
+    target_link_libraries( ${name} ${add_LIBS} )
+endif ()
+if (MSVC)
+    set_target_properties( ${name} PROPERTIES DEBUG_POSTFIX d )
+endif ()
+# deal with install, if any...
+#install( TARGETS ${name} DESTINATION bin )
+
+set(name tidy-test-prev)
+set(dir src)
+set(${name}_SRCS
+    ${dir}/tidy-prev.c
+    )
 add_executable( ${name} ${${name}_SRCS} )
 if (add_LIBS)
     target_link_libraries( ${name} ${add_LIBS} )
@@ -155,6 +175,7 @@ if (MSVC)
 endif ()
 # deal with install, if any...
 #install( TARGETS ${name} DESTINATION bin )
+
 
 set(name tidy-opts)
 set(dir src)
