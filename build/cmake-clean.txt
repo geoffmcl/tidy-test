@@ -8,4 +8,8 @@ test226
 test71
 tidy-tree
 url2text
+sample
+test-get-options
+test-tidy
+tidy-json
 
