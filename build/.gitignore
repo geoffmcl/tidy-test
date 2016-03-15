@@ -29,4 +29,6 @@ test-get-options
 test-tidy
 tidy-json
 tidylibs.txt
+tidy-locale
+tidy-test-prev
 
