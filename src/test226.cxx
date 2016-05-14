@@ -118,6 +118,7 @@ void dumpNode( TidyDoc tdoc, TidyNode tnod, int indent )
     }
 }
 
+#ifdef USE_TIDY5_API
 void delete_all_body_attributes( TidyDoc tdoc )
 {
     size_t ii, max = vNodeAtts.size();
@@ -128,6 +129,7 @@ void delete_all_body_attributes( TidyDoc tdoc )
         tidyAttrDiscard( tdoc, na.node, na.attr );
     }
 }
+#endif
 
 /* test266 delete nodes and attributes */
 int main(int argc, char **argv) 
@@ -190,6 +192,8 @@ int main(int argc, char **argv)
         iret = 1;
         goto exit;
     }
+    
+#ifdef USE_TIDY5_API
     // TidyNode TIDY_CALL    tidyDiscardElement( TidyDoc tdoc, TidyNode tnod )
     printf("Deletion of 'bold' node and child text...\n");
 
@@ -211,6 +215,7 @@ int main(int argc, char **argv)
     dumpNode( tdoc, body, 0 );
 
     printf("Effectively a 'tidy-cleaner'... deleteing unwanted nodes, and attributes...\n");
+#endif
 
     printf("Passed test...\n");
 

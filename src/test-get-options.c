@@ -87,7 +87,11 @@ int main ()
     TidyDoc tdoc;
     int count;
     count = 0;
+#ifdef USE_TIDY5_API
     printf("Testing libtidy version %s, dated %s\n", tidyLibraryVersion(), tidyReleaseDate());
+#else
+    printf("Testing libtidy version dated %s\n", tidyReleaseDate());
+#endif
     tdoc = tidyCreate();    
     pos = tidyGetOptionList( tdoc );
     test (pos != 0, & count, "got a tdoc");

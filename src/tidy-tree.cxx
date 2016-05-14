@@ -228,6 +228,7 @@ int show_tidy_nodes()
 
     if ( status >= 0 ) {
         status = tidyRunDiagnostics( tdoc );
+#ifdef USE_TIDY5_API
         if ( !tidyOptGetBool(tdoc, TidyQuiet) ) {
             /* NOT quiet, show DOCTYPE, if not already shown */
             if (!tidyOptGetBool(tdoc, TidyShowInfo)) {
@@ -236,6 +237,7 @@ int show_tidy_nodes()
                 tidyOptSetBool( tdoc, TidyShowInfo, no );
             }
         }
+#endif // #ifdef USE_TIDY5_API
     }
     if ( status > 1 ) /* If errors, do we want to force output? */
             status = ( tidyOptGetBool(tdoc, TidyForceOutput) ? status : -1 );

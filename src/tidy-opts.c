@@ -278,7 +278,11 @@ static TidyOutputSink sink;
 
 void show_libVersion()
 {
+#ifdef USE_TIDY5_API
     ctmbstr s = tidyLibraryVersion();
+#else    
+    ctmbstr s = tidyReleaseDate();
+#endif    
     SPRTF("Using HTML Tidy library version %s\n", s);
 }
 
@@ -596,6 +600,8 @@ void test_with_allocator()
         SPRTF("errbuf: '%s'\n", m_errbuf.bp);
         tidyBufClear( &m_errbuf );
     }
+    
+#ifdef USE_TIDY5_API
     res = tidyReportDoctype( doc );
     SPRTF("%s: Results from tidyReportDoctype(...) = %d\n", module, res );
     if (m_errbuf.bp && strlen((const char *)m_errbuf.bp)) {
@@ -610,6 +616,8 @@ void test_with_allocator()
         SPRTF("errbuf: '%s'\n", m_errbuf.bp);
         tidyBufClear( &m_errbuf );
     }
+#endif // #ifdef USE_TIDY5_API
+    
     res = tidySaveBuffer( doc, &m_outbuf );
     SPRTF("%s: Results from tidySaveBuffer(...) = %d\n", module, res );
     if (m_errbuf.bp && strlen((const char *)m_errbuf.bp)) {

@@ -12,10 +12,8 @@ set( tidy-test_MAJOR 5 )
 set( tidy-test_MINOR 0 )
 set( tidy-test_POINT 0 )
 
-# Allow developer to select is Dynamic or static library built
-set( LIB_TYPE STATIC )  # set default static
-option( BUILD_SHARED_LIB "Set ON to build shared Library (DLL)" OFF )
-
+# Option to test libtidy-0.99 compatibility
+option( USE_TIDY5_API "Set OFF to test backward compatibility to libtidy-0.99, else 5.0.0 onwards." ON )
 
 if(CMAKE_COMPILER_IS_GNUCXX)
     set( WARNING_FLAGS -Wall )
@@ -103,12 +101,13 @@ add_definitions( -DTIDY_TEST )
 # add_definitions( -DHAVE_CONFIG_H )
 # include_directories( ${CMAKE_BINARY_DIR} )
 
-if(BUILD_SHARED_LIB)
-   set(LIB_TYPE SHARED)
-   message(STATUS "*** Building DLL library ${LIB_TYPE}")
+if (USE_TIDY5_API)
+    message(STATUS "*** Using Tidy 5 API")
+    add_definitions( -DUSE_TIDY5_API )
 else()
-   message(STATUS "*** Option BUILD_SHARED_LIB is OFF ${LIB_TYPE}")
+   message(STATUS "*** Using Tidy 0.99 API")
 endif()
+
 # Total libs 0, exes 1
 #################################################
 ##### LIBRARIES 1 #####
@@ -141,6 +140,7 @@ list(APPEND add_LIBS ${name})
 ##### EXECUTABLE 1 #####
 #################################################
 
+if (USE_TIDY5_API)
 # tidy EXECUTABLE from [src],
 # have 1 C/C++ sources, 0 headers
 set(name tidy-test)
@@ -176,6 +176,7 @@ endif ()
 # deal with install, if any...
 #install( TARGETS ${name} DESTINATION bin )
 
+endif (USE_TIDY5_API)
 
 set(name tidy-opts)
 set(dir src)
@@ -350,17 +351,19 @@ if (MSVC)
     set_target_properties( ${name} PROPERTIES DEBUG_POSTFIX d )
 endif ()
 
-################################################################
-### tidy-locale.c - show current local as tidy sees it
-set(name tidy-locale)
-set(dir src)
-set(${name}_SRCS
-    ${dir}/${name}.c
-    )
-add_executable( ${name} ${${name}_SRCS} )
-target_link_libraries( ${name} ${add_LIBS} )
-if (MSVC)
-    set_target_properties( ${name} PROPERTIES DEBUG_POSTFIX d )
+if (USE_TIDY5_API)
+    ################################################################
+    ### tidy-locale.c - show current local as tidy sees it
+    set(name tidy-locale)
+    set(dir src)
+    set(${name}_SRCS
+        ${dir}/${name}.c
+        )
+    add_executable( ${name} ${${name}_SRCS} )
+    target_link_libraries( ${name} ${add_LIBS} )
+    if (MSVC)
+        set_target_properties( ${name} PROPERTIES DEBUG_POSTFIX d )
+    endif ()
 endif ()
 
 # eof

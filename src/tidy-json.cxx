@@ -70,7 +70,11 @@ void give_help( char *name )
     printf(" Indenting only applied if 'newline' is on.\n");
 
     printf("\n");
+#ifdef USE_TIDY5_API
     printf(" Will load the assumed HTML input file in libtidy, version %s (%s)\n", tidyLibraryVersion(), tidyReleaseDate());
+#else    
+    printf(" Will load the assumed HTML input file in libtidy, version %s\n", tidyReleaseDate());
+#endif    
     printf(" and convert the node tree to a json output.\n");
     printf("\n");
 }
