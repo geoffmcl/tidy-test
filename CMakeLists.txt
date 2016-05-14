@@ -366,4 +366,19 @@ if (USE_TIDY5_API)
     endif ()
 endif ()
 
+################################################################
+### tidy-buf-test.c - get output into a tidy buffer
+### See https://sourceforge.net/p/tidy/bugs/404/
+### status = tidySaveStdout( tdoc ); is done only to a buffer
+set(name tidy-buf-test)
+set(dir src)
+set(${name}_SRCS
+    ${dir}/${name}.c
+    )
+add_executable( ${name} ${${name}_SRCS} )
+target_link_libraries( ${name} ${add_LIBS} )
+if (MSVC)
+    set_target_properties( ${name} PROPERTIES DEBUG_POSTFIX d )
+endif ()
+
 # eof
