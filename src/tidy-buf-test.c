@@ -30,7 +30,7 @@ void give_help( char *name )
     printf(" and use tidyParseBuffer() to parse the html, and will then show all the nodes\n");
     printf(" in the tidy tree.\n");
     printf(" In other words more or less show using tidyParseBuffer() does nothing different than\n");
-    printf(" cosole tidy parsing and outputting the same html.\n");
+    printf(" console tidy parsing and outputting the same html.\n");
 }
 
 int parse_args( int argc, char **argv )
