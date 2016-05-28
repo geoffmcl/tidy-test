@@ -26,7 +26,11 @@ void give_help( char *name )
     printf("%s: usage: [options] usr_input\n", module);
     printf("Options:\n");
     printf(" --help  (-h or -?) = This help and exit(2)\n");
-    // TODO: More help
+    printf(" Given a valid html input file, will load the contents into a tidy buffer,\n");
+    printf(" and use tidyParseBuffer() to parse the html, and will then show all the nodes\n");
+    printf(" in the tidy tree.\n");
+    printf(" In other words more or less show using tidyParseBuffer() does nothing different than\n");
+    printf(" cosole tidy parsing and outputting the same html.\n");
 }
 
 int parse_args( int argc, char **argv )
@@ -61,7 +65,7 @@ int parse_args( int argc, char **argv )
             usr_input = strdup(arg);
         }
     }
-#ifndef NDEBUG
+#if (defined(WIN32) && !defined(NDEBUG))
     if (!usr_input) {
         usr_input = def_input;
         printf("%s: No user input found. Using default %s!\n", module, usr_input);
