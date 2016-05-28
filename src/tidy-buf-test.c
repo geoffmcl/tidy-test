@@ -25,7 +25,7 @@ void give_help( char *name )
 {
     printf("%s: usage: [options] usr_input\n", module);
     printf("Options:\n");
-    printf(" --help  (-h or -?) = This help and exit(2)\n");
+    printf(" --help  (-h or -?) = This help and exit(0)\n");
     printf(" Given a valid html input file, will load the contents into a tidy buffer,\n");
     printf(" and use tidyParseBuffer() to parse the html, and will then show all the nodes\n");
     printf(" in the tidy tree.\n");
@@ -226,6 +226,7 @@ int do_buf_test()
     }
     tdoc = tidyCreate();
     tidyBufInit(&buff);
+    printf("%s: Loading file '%s' into a tidy buffer...\n", module, usr_input );
     while (( res = fread(buffer,1,MY_MX_BUF,fp) ) > 0 ) {
         buffer[res] = 0;
         tidyBufAppend(&buff, buffer, res);
@@ -235,6 +236,7 @@ int do_buf_test()
         printf("%s: Failed to get any data from '%s'\n", module, usr_input);
         return 1;
     }
+    printf("%s: Loaded %d characters into the tidy buffer to pass to 'tidyParseBuffer'...\n", module, buff.size );
     res = tidyParseBuffer(tdoc, &buff);
     if (res != 0) {
         printf("%s: Error: Parsing html file data returned %d\n",res);
@@ -246,12 +248,14 @@ int do_buf_test()
         iret = 1;
         goto exit;
     }
+    printf("%s: Showing nodes of '%s'\n", module, usr_input );
     res = 0;
     countNodes(node, &res);
     printf("%s: Got %d nodes in tidy tree...\n", module, res );
     tidyBufInit(&txtbuf);
     res = 0;
     dumpNode( node, 0, &res );
+    printf("%s: Done %d nodes from tidy tree...\n", module, res );
 
 exit:
     tidyBufFree( &buff );
@@ -265,8 +269,11 @@ int main( int argc, char **argv )
 {
     int iret = 0;
     iret = parse_args(argc,argv);
-    if (iret)
+    if (iret) {
+        if (iret == 2)
+            iret = 0;
         return iret;
+    }
 
     iret = do_buf_test();   // actions of app
 
