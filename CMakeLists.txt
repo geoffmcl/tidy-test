@@ -366,4 +366,18 @@ if (USE_TIDY5_API)
     endif ()
 endif ()
 
+################################################################
+### tidy-buf-test - Issue #413 - Using tidyParseBuffer
+set(name tidy-buf-test)
+set(dir src)
+set(${name}_SRCS
+    ${dir}/${name}.c
+    )
+add_executable( ${name} ${${name}_SRCS} )
+target_link_libraries( ${name} ${add_LIBS} )
+if (MSVC)
+    set_target_properties( ${name} PROPERTIES DEBUG_POSTFIX d )
+endif ()
+
+
 # eof
