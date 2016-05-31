@@ -19,7 +19,8 @@
 static const char *module = "tidy-buf-test";
 
 static const char *usr_input = 0;
-static const char *def_input = "F:\\Projects\\tidy-test\\test\\input5\\in_413.html";
+//static const char *def_input = "F:\\Projects\\tidy-test\\test\\input5\\in_413.html";
+static const char *def_input = "F:\\Projects\\tidy-test\\test\\input5\\in_413-2.html";
 
 void give_help( char *name )
 {
@@ -89,7 +90,24 @@ static void countNodes( TidyNode tnod, int *pcnt )
     }
 }
 
-static TidyBuffer txtbuf;
+TidyNode FindNodeByName(TidyDoc doc, TidyNode tnod, const char *NodeName)
+{
+	TidyNode child, tmp = 0;
+	for (child = tidyGetChild(tnod); child; child = tidyGetNext(child))
+	{
+		ctmbstr name = tidyNodeGetName(child);
+		if (name && (stricmp(NodeName,name) == 0))
+				return child;
+
+		tmp = FindNodeByName(doc, child, NodeName); /* recursive */
+		if (tmp != 0)
+			return tmp;
+	}
+	return 0;
+}
+
+
+static TidyBuffer txtbuf, errbuf;
 static TidyDoc tdoc = 0;
 static int total_txt = 0;
 static int txt_nodes = 0;
@@ -211,12 +229,14 @@ void dumpNode( TidyNode tnod, int indent, int *pcnt )
 
 
 #define MY_MX_BUF 256
+static const char *tbody = "tbody";
+
 int do_buf_test()
 {
     int res, iret = 0;
     FILE *fp = 0;
     char buffer[MY_MX_BUF+16];
-    TidyBuffer buff;
+    TidyBuffer buff, tmpbuf;
     TidyNode node = 0;
     
     fp = fopen(usr_input,"r");
@@ -236,11 +256,16 @@ int do_buf_test()
         printf("%s: Failed to get any data from '%s'\n", module, usr_input);
         return 1;
     }
+    tidyBufInit(&errbuf);
+    tidySetErrorBuffer(tdoc, &errbuf);
     printf("%s: Loaded %d characters into the tidy buffer to pass to 'tidyParseBuffer'...\n", module, buff.size );
     res = tidyParseBuffer(tdoc, &buff);
     if (res != 0) {
-        printf("%s: Error: Parsing html file data returned %d\n",res);
-        return 1;
+        printf("%s: Error: Parsing html file data returned %d\n",module, res);
+        if (errbuf.bp && errbuf.size) {
+            printf("%s\n", errbuf.bp );
+        }
+        // return 1;
     }
     node = tidyGetRoot(tdoc);
     if (!node) {
@@ -253,11 +278,34 @@ int do_buf_test()
     countNodes(node, &res);
     printf("%s: Got %d nodes in tidy tree...\n", module, res );
     tidyBufInit(&txtbuf);
+    
     res = 0;
     dumpNode( node, 0, &res );
     printf("%s: Done %d nodes from tidy tree...\n", module, res );
 
+    node = FindNodeByName( tdoc, tidyGetBody(tdoc), tbody );
+    if (node) {
+        printf("%s: Found '%s'... getting text...\n", module, tbody);
+        tidyBufInit(&tmpbuf);
+        if (tidyNodeGetText(tdoc, node, &tmpbuf)) {
+            if (tmpbuf.bp && tmpbuf.size) {
+                printf("%s: Found %d bytes of text...\n", module, tmpbuf.size);
+                printf("%s\n", tmpbuf.bp );
+            } else {
+                printf("%s: Found NO text...\n", module);
+            }
+        } else {
+            printf("%s: tidyNodeGetText(tdoc, node, &tmpbuf) FAILED!\n", module);
+        }
+        tidyBufFree( &tmpbuf );
+    } else {
+        printf("%s: Node '%s' NOT found... \n", module, tbody);
+
+    }
+
 exit:
+    tidyBufFree( &txtbuf );
+    tidyBufFree( &errbuf );
     tidyBufFree( &buff );
     tidyRelease( tdoc ); /* called to free hash tables etc. */
 
