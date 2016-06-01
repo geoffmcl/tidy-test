@@ -16,6 +16,10 @@
 #ifndef SPRTF
 #define SPRTF printf
 #endif
+#ifndef WIN32 
+  #define stricmp strcasecmp 
+  #define strnicmp strncasecmp 
+#endif
 static const char *module = "tidy-buf-test";
 
 static const char *usr_input = 0;
@@ -269,7 +273,7 @@ int do_buf_test()
     }
     node = tidyGetRoot(tdoc);
     if (!node) {
-        printf("%s: Failed to get ROOT node!\n");
+        printf("%s: Failed to get ROOT node!\n", module);
         iret = 1;
         goto exit;
     }
