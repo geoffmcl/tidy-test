@@ -31,4 +31,5 @@ tidy-json
 tidylibs.txt
 tidy-locale
 tidy-test-prev
+tidy-buf-test
 
