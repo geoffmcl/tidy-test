@@ -10,7 +10,9 @@
 #ifdef WIN32
 // CAN NOT DEFINE THIS!!! # define IPV6STRICT 1
 # include <winsock2.h>
+#ifndef ECONNREFUSED
 # define ECONNREFUSED WSAECONNREFUSED
+#endif
 #else
 # include <sys/socket.h>
 # include <netdb.h>
