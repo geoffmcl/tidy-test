@@ -207,6 +207,48 @@ DiskType is_file_or_directory( const char * path )
 	return MDT_NONE;
 }
 size_t get_last_file_size() { return buf.st_size; }
+///////////////////////////////////////////////////////////
+// Code from Issue #457
+static int node_count = 0;
+void IterateNode(TidyDoc doc, TidyNode tnod)
+{
+	TidyNode child;
+	for (child = tidyGetChild(tnod); child; child = tidyGetNext(child))
+	{
+		ctmbstr name = tidyNodeGetName(child);
+
+		node_count++;
+		SPRTF("%2d: ", node_count);
+
+		if (name)
+		{
+			TidyNodeType nodeType = tidyNodeGetType(child);
+
+			// if it has a name, then it's an HTML tag ...
+			TidyAttr attr;
+			SPRTF("<%s ", name);
+			// walk the attribute list
+			for (attr = tidyAttrFirst(child); attr; attr = tidyAttrNext(attr))
+			{
+				printf(tidyAttrName(attr));
+				tidyAttrValue(attr) ? SPRTF("=\"%s\" ", tidyAttrValue(attr)) : SPRTF(" ");
+			}
+			SPRTF(">\n");
+		}
+		else
+		{
+			/* if it doesn't have a name, then it's probably text, cdata, etc... */
+			TidyBuffer buf;
+			tidyBufInit(&buf);
+			tidyNodeGetText(doc, child, &buf);
+			SPRTF("%s\n", buf.bp ? (char *)buf.bp : "");
+			tidyBufFree(&buf);
+		}
+		IterateNode(doc, child); /* recursive */
+	}
+}
+
+///////////////////////////////////////////////////////////////////////
 
 int show_tidy_nodes()
 {
@@ -244,9 +286,21 @@ int show_tidy_nodes()
 
     dumpDoc(tdoc);
 
+	SPRTF("Issue #457 - Ignoring close elements\n");
+	IterateNode(tdoc, tidyGetRoot(tdoc));
+	SPRTF("End of testing - done %d nodes...\n", node_count);
+
     tidyRelease( tdoc ); /* called to free hash tables etc. */
     iret = ((status < 0) && (status > 1)) ? 1 : 0;
     return iret;
+}
+
+void test_no_doc()
+{
+    TidyDoc td = 0;
+    td = tidyCreate();
+    int status = tidyCleanAndRepair( td );
+    tidyRelease( td ); /* called to free hash tables etc. */
 }
 
 // main() OS entry
@@ -254,9 +308,13 @@ int main( int argc, char **argv )
 {
     int iret = 0;
     set_log_file((char *)def_log, 0);
+    test_no_doc();
     iret = parse_args(argc,argv);
-    if (iret)
+    if (iret) {
+        if (iret == 2)
+            iret = 0;
         return iret;
+    }
 
     iret = show_tidy_nodes();    // actions of app
 
