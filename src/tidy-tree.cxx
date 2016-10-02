@@ -298,6 +298,9 @@ int show_tidy_nodes()
 void test_no_doc()
 {
     TidyDoc td = 0;
+	ctmbstr vers = tidyLibraryVersion();
+	ctmbstr date = tidyReleaseDate();
+	SPRTF("Testing 'libtidy' version %s (%s)\n", vers, date);
     td = tidyCreate();
     int status = tidyCleanAndRepair( td );
     tidyRelease( td ); /* called to free hash tables etc. */
