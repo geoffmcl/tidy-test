@@ -16,6 +16,7 @@ Win32/*
 *.opensdf
 *.suo
 ipch/*
+*.VC.db
 libutillib.a
 tidy-opts
 test71
