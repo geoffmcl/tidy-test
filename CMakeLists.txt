@@ -380,14 +380,22 @@ if (MSVC)
 endif ()
 
 ################################################################
-### issue-452
-set(name issue-452)
-set(dir src)
-set(${name}_SRCS ${dir}/${name}.cxx)
-add_executable( ${name} ${${name}_SRCS} )
-target_link_libraries( ${name} ${add_LIBS} )
+### issue-452 - oops, seems this is only for MS? compilers TODO: check...
+### gcc 4.8.4 : warning: ‘auto’ changes meaning in C++11; please remove it [-Wc++0x-compat], then
+### error: ‘showErrors’ does not name a type
+###     auto showErrors = tidyOptGetValue(tidyDoc, TidyShowErrors);
+### ALSO
+### error: ‘nullptr’ was not declared in this scope
+###     if (showErrors!=nullptr) {
 if (MSVC)
-    set_target_properties( ${name} PROPERTIES DEBUG_POSTFIX d )
+    set(name issue-452)
+    set(dir src)
+    set(${name}_SRCS ${dir}/${name}.cxx)
+    add_executable( ${name} ${${name}_SRCS} )
+    target_link_libraries( ${name} ${add_LIBS} )
+    if (MSVC)
+        set_target_properties( ${name} PROPERTIES DEBUG_POSTFIX d )
+    endif ()
 endif ()
 
 # eof
