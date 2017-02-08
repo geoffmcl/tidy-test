@@ -1,0 +1,6 @@
+show-body-only: true
+show-errors: 0
+show-info: false
+show-warnings: false
+wrap: 120
+quiet: true

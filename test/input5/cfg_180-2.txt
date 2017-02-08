@@ -1,0 +1,7 @@
+show-info: no
+indent: yes
+tidy-mark: no
+// doctype: omit
+// same as -omit
+//omit-optional-tags: yes
+hide-endtags: yes

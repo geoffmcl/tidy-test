@@ -1,0 +1,11 @@
+// default HTML Tidy(5) configuration file
+indent: auto
+char-encoding: utf8
+tidy-mark: no
+clean: yes
+drop-font-tags: yes
+logical-emphasis: yes
+indent-attributes: yes
+show-info: no
+// eof
+

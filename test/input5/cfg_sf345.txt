@@ -1,0 +1,3 @@
+// SF #345
+drop-empty-elements: no
+// eof

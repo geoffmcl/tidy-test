@@ -1,0 +1,4 @@
+// config for #390 - sf563
+indent: yes
+indent-spaces: 4
+hide-endtags: yes

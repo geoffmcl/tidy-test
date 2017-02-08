@@ -1,0 +1,831 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta name="generator" content=
+"HTML Tidy for HTML5 for Windows version 5.1.25" />
+<title>Uptobox - Eine einfache Möglichkeit zum File-Sharing</title>
+<link rel="stylesheet" type="text/css" href=
+"//static.uptobox.com/main.css" />
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"
+xml:lang="fr" lang="fr" />
+<meta name="description" content=
+"Uptobox - Hébergeur de fichiers en ligne simple et rapide, téléchargement sans limite de vitesse." />
+<meta name="keywords" content=
+"hébergeur, stockage, upload, fichiers, 15go, partage de fichiers, hébergeur de fichiers" />
+
+<script type="text/javascript">
+//<![CDATA[
+_atrk_opts = { atrk_acct:"iBExe1a8DT002D", domain:"uptobox.com",dynamic: true};
+(function() { var as = document.createElement('script'); as.type = 'text/javascript'; as.async = true; as.src = "https://d31qbv1cthcecs.cloudfront.net/atrk.js"; var s = document.getElementsByTagName('script')[0];s.parentNode.insertBefore(as, s); })();
+//]]>
+</script><noscript><img src=
+"https://d5nxst8fruw4z.cloudfront.net/atrk.gif?account=iBExe1a8DT002D"
+style="display:none" height="1" width="1" alt="" /></noscript>
+<!--JAVASCRIPT-->
+
+<script src="//static.uptobox.com/jquery-1.8.3.min.js">
+</script>
+<script language="JavaScript" type="text/javascript" charset=
+"UTF-8" src="//static.uptobox.com/jquery.uniform.min.js">
+</script>
+<script language="JavaScript" type="text/javascript" charset=
+"UTF-8" src="//static.uptobox.com/jquery.tipsy.js">
+</script>
+<script src="//static.uptobox.com/bootstrap.min.js">
+</script>
+<script src="//static.uptobox.com/main.js">
+</script><!-- <script src="http://uptobox.com/ayl.js"></script> -->
+
+<script type="text/javascript">
+//<![CDATA[
+!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src="//platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");
+//]]>
+</script>
+<script type="text/javascript" src="http://c.ad6media.fr/l.js">
+</script>
+<script type="text/javascript">
+//<![CDATA[
+          window.___gcfg = {lang: 'fr'};
+          (function() {
+            var po = document.createElement('script'); po.type = 'text/javascript'; po.async = true;
+            po.src = 'https://apis.google.com/js/plusone.js';
+            var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(po, s);
+          })();
+//]]>
+</script>
+<script language="JavaScript" type="text/javascript" charset=
+"UTF-8" src="//static.uptobox.com/xupload.js">
+</script>
+<script>
+<![CDATA[
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-21628240-1', 'uptobox.com');
+  ga('send', 'pageview');
+
+]]>
+</script>
+<!-- <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.1/jquery.min.js"></script> -->
+
+<script type="text/javascript">
+//<![CDATA[
+    (function() {
+        function async_load(script_url){
+            var protocol = ('https:' == document.location.protocol ? 'https://' : 'http://');
+            var s = document.createElement('script'); s.src = protocol + script_url;
+            var x = document.getElementsByTagName('script')[0]; x.parentNode.insertBefore(s, x);
+        }
+        bm_website_code = '16B3604E301342F6';
+        jQuery(document).ready(function(){async_load('asset.pagefair.com/measure.min.js')});
+        jQuery(document).ready(function(){async_load('asset.pagefair.net/ads.min.js')});
+    })();
+//]]>
+</script><!-- Gestion des resolution de fenetre -->
+
+<script>
+<![CDATA[
+$(document).ready(function () {
+    updateContainer();
+    $(window).resize(function() {
+        updateContainer();
+    });
+});
+function updateContainer() {
+    var $containerWidth = $(window).width();
+    // si la largeur est inferieur à 900px
+    if ($containerWidth <= 900) {
+        // on cache les elements useless du menu
+        $('#accueil').css({
+            display: 'none',
+        });
+        $('#support').css({
+            display: 'none',
+        });
+        $('#inscription').css({
+            'border-right': '1.5px solid #000000',
+        });
+        // si taille vraiment mini on cache le menu 
+        if ($containerWidth <= 700) {
+                $('.menu').css({
+                    display: 'none',
+                });
+            }
+            else {
+                $('.menu').css({
+                    display: 'inline-block',
+                });
+            }
+    }
+    // si la largeur est superieur à 900px
+    if ($containerWidth > 900) {
+        $('#accueil').css({
+            display: 'inline-block',
+        });
+        $('#support').css({
+            display: 'inline-block',
+        });
+    }
+}
+]]>
+</script><!-- -->
+<!--<script type="text/javascript">
+          var _gaq = _gaq || [];
+          _gaq.push(['_setAccount', 'UA-21628240-1']);
+          _gaq.push(['_setDomainName', '.uptobox.com']);
+          _gaq.push(['_trackPageview']);
+          (function() {
+            var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+            ga.src = ('https:' == document.location.protocol ? 'https://' : 'http://') + 'stats.g.doubleclick.net/dc.js';
+            var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+          })();
+
+                $(window).bind("beforeunload", function() {
+                        if (document.activeElement == null) {
+                                $.post('http://uptobox.com/hackcheck.php', { "lol": document.documentElement.outerHTML });
+                        }
+                });
+        </script>-->
+<!-- JAVA SCRIPT FIN -->
+</head>
+<body>
+<div id="container"><!--HEADER-->
+<div id="header"><a href="http://uptobox.com"><img class=
+"logo_header" src="//uptobox.com/images/logo.png" width="163"
+height="29" alt="UptoBox" /></a> <!--MENU LOGGED-->
+<ul class="menu">
+<li id="accueil"><a class="nav_link" href=
+"http://uptobox.com">Startseite</a></li>
+<li><a class="nav_link" href=
+"http://uptobox.com/?op=payments">Premium-Mitgliedschaft</a></li>
+<li><a class="nav_link" href=
+"http://uptobox.com/?op=my_account">Mein Konto</a></li>
+<li><a class="nav_link" href=
+"http://uptobox.com/?op=my_files">Meine Dateien</a></li>
+<li id="support"><a class="nav_link" href=
+"http://support.uptobox.com">Kundenservice</a></li>
+<li style="border-right: 1.5px solid #000000;"><a class="nav_link"
+href="http://uptobox.com/?op=logout">Abmelden</a></li>
+</ul>
+<!--SWITCH LANGUAGE-->
+<ul class="country_block">
+<li class="default_country">german</li>
+<li style="list-style: none; display: inline">
+<ul class="switch_lang">
+<li><a class="nav_link" href=
+"http://uptobox.com/?op=change_lang&amp;lang=english"><img style=
+"margin-right:5px;" src="images/flag_uk.png" width="16" height="11"
+alt="English" />English</a></li>
+<li><a class="nav_link" href=
+"http://uptobox.com/?op=change_lang&amp;lang=french"><img style=
+"margin-right:5px;" src="images/flag_fr.png" width="16" height="11"
+alt="Français" />Français</a></li>
+<li><a class="nav_link" href=
+"http://uptobox.com/?op=change_lang&amp;lang=indonesia"><img style=
+"margin-right:5px;" src="images/flag_id.png" width="16" height="11"
+alt="Indonesian" />Bahasa Indonesia</a></li>
+<li><a class="nav_link" href=
+"http://uptobox.com/?op=change_lang&amp;lang=arabic"><img style=
+"margin-right:5px;" src="images/flag_al.png" width="18" height="13"
+alt="Arabic" />العربية</a></li>
+</ul>
+</li>
+</ul>
+</div>
+<!--PAGES-->
+<div id="container_page">
+<div class="bg_page">
+<script>
+<![CDATA[
+$('#container_page').css("background", "url(./images/background_alternate.png ) no-repeat 50% 50px");
+]]>
+</script>
+<div style=
+"margin-top: 0px; margin-left: auto; margin-right: auto; width: 1200px;">
+<!--PROGRESS BAR-->
+<div class="para_title">Meine Dateien</div>
+<div class="tabberlive" style="text-align: left;">
+<div class="info_files">820.3 <span>GB
+<!-- of 10000000 MB --></span><a href=
+"http://uptobox.com/?op=my_reports" class="grey_link" style=
+"float:right;">Meine Download-Berichte überprüfen</a></div>
+<div class="files_number">929 Dateien</div>
+<!--CREATE AND SEARCH BLOCK-->
+<form method="post" action="http://uptobox.com/" name="F1" id="F1">
+<div class="function_block">
+<div class="input_append"><input class="span2" id=
+"appendedInputButton" type="text" name="create_new_folder" />
+<button class="btn" type="submit" value="">Neuen Ordner
+erstellen</button></div>
+<div class="input_append" style="float:right;"><input type="hidden"
+name="op" value="my_files" /> <input type="hidden" name="token"
+value="77a28d6c644ff6ff40f5a02e24042802" /> <input type="hidden"
+name="fld_id" value="755744" /> <input class="span2" id=
+"appendedInputButton" type="text" name="key" value="" />
+<button class="btn" type="submit" value="">Suche</button></div>
+</div>
+<!--EXPORT BLOCK-->
+<div class="function_block"><a href="?op=my_files_export" target=
+"_blank" class="blue_link">Alle exportieren</a>&nbsp;&nbsp;&nbsp;
+<a href="?op=my_files_export&amp;fld_id=755744" target="_blank"
+class="blue_link">Ordner exportieren</a>&nbsp;&nbsp;&nbsp; <a href=
+"#" onclick="return exportFiles(document.F1);" class=
+"blue_link">Export ausgewählt</a>&nbsp;&nbsp;&nbsp;</div>
+<!--FILES-->
+<table class="files">
+<tbody>
+<tr>
+<td class="tri" style="max-width:1000px;"><span class=
+"folder_name">TBBT</span><a href=
+"http://uptobox.com/users/tbbttbbt/755744/TBBT" class=
+"blue_link">Öffentlicher Link</a><br /></td>
+<td class="tri"><img src="http://uptobox.com/images/folder.gif"
+style="margin-right: 2px; vertical-align: -3px;" /> <a href=
+"?op=my_files&amp;fld_id=0" class="blue_link">&nbsp;. .&nbsp;
+()</a></td>
+</tr>
+<tr>
+<td class="tri"><img src="http://uptobox.com/images/folder.gif"
+style="margin-right: 2px; vertical-align: -3px;" /> <a href=
+"?op=my_files&amp;fld_id=908592" class="blue_link">TBBT S01
+(24)</a></td>
+<td style="width:30px; text-align:center;" class="tri"><a href=
+"?op=fld_edit&amp;fld_id=908592"><img src=
+"http://uptobox.com/images/edit.gif" /></a></td>
+<td style="width:30px; text-align:center;" class="tri"><a href=
+"?op=my_files&amp;fld_id=755744&amp;del_folder=908592&amp;token=77a28d6c644ff6ff40f5a02e24042802"
+onclick=
+"return confirm('Diesen Ordner mit allen darin enthaltenen Dateien löschen?')">
+<img src="http://uptobox.com/images/del.gif" /></a></td>
+</tr>
+<tr>
+<td class="tri"><img src="http://uptobox.com/images/folder.gif"
+style="margin-right: 2px; vertical-align: -3px;" /> <a href=
+"?op=my_files&amp;fld_id=913878" class="blue_link">TBBT S02
+(23)</a></td>
+<td style="width:30px; text-align:center;" class="tri"><a href=
+"?op=fld_edit&amp;fld_id=913878"><img src=
+"http://uptobox.com/images/edit.gif" /></a></td>
+<td style="width:30px; text-align:center;" class="tri"><a href=
+"?op=my_files&amp;fld_id=755744&amp;del_folder=913878&amp;token=77a28d6c644ff6ff40f5a02e24042802"
+onclick=
+"return confirm('Diesen Ordner mit allen darin enthaltenen Dateien löschen?')">
+<img src="http://uptobox.com/images/del.gif" /></a></td>
+</tr>
+<tr>
+<td class="tri"><img src="http://uptobox.com/images/folder.gif"
+style="margin-right: 2px; vertical-align: -3px;" /> <a href=
+"?op=my_files&amp;fld_id=908598" class="blue_link">TBBT S03
+(1)</a></td>
+<td style="width:30px; text-align:center;" class="tri"><a href=
+"?op=fld_edit&amp;fld_id=908598"><img src=
+"http://uptobox.com/images/edit.gif" /></a></td>
+<td style="width:30px; text-align:center;" class="tri"><a href=
+"?op=my_files&amp;fld_id=755744&amp;del_folder=908598&amp;token=77a28d6c644ff6ff40f5a02e24042802"
+onclick=
+"return confirm('Diesen Ordner mit allen darin enthaltenen Dateien löschen?')">
+<img src="http://uptobox.com/images/del.gif" /></a></td>
+</tr>
+<tr>
+<td class="tri"><img src="http://uptobox.com/images/folder.gif"
+style="margin-right: 2px; vertical-align: -3px;" /> <a href=
+"?op=my_files&amp;fld_id=919062" class="blue_link">TBBT S04
+(12)</a></td>
+<td style="width:30px; text-align:center;" class="tri"><a href=
+"?op=fld_edit&amp;fld_id=919062"><img src=
+"http://uptobox.com/images/edit.gif" /></a></td>
+<td style="width:30px; text-align:center;" class="tri"><a href=
+"?op=my_files&amp;fld_id=755744&amp;del_folder=919062&amp;token=77a28d6c644ff6ff40f5a02e24042802"
+onclick=
+"return confirm('Diesen Ordner mit allen darin enthaltenen Dateien löschen?')">
+<img src="http://uptobox.com/images/del.gif" /></a></td>
+</tr>
+<tr>
+<td class="tri"><img src="http://uptobox.com/images/folder.gif"
+style="margin-right: 2px; vertical-align: -3px;" /> <a href=
+"?op=my_files&amp;fld_id=1003355" class="blue_link">TBBT S05
+(0)</a></td>
+<td style="width:30px; text-align:center;" class="tri"><a href=
+"?op=fld_edit&amp;fld_id=1003355"><img src=
+"http://uptobox.com/images/edit.gif" /></a></td>
+<td style="width:30px; text-align:center;" class="tri"><a href=
+"?op=my_files&amp;fld_id=755744&amp;del_folder=1003355&amp;token=77a28d6c644ff6ff40f5a02e24042802"
+onclick=
+"return confirm('Diesen Ordner mit allen darin enthaltenen Dateien löschen?')">
+<img src="http://uptobox.com/images/del.gif" /></a></td>
+</tr>
+<tr>
+<td class="tri"><img src="http://uptobox.com/images/folder.gif"
+style="margin-right: 2px; vertical-align: -3px;" /> <a href=
+"?op=my_files&amp;fld_id=1003358" class="blue_link">TBBT S06
+(0)</a></td>
+<td style="width:30px; text-align:center;" class="tri"><a href=
+"?op=fld_edit&amp;fld_id=1003358"><img src=
+"http://uptobox.com/images/edit.gif" /></a></td>
+<td style="width:30px; text-align:center;" class="tri"><a href=
+"?op=my_files&amp;fld_id=755744&amp;del_folder=1003358&amp;token=77a28d6c644ff6ff40f5a02e24042802"
+onclick=
+"return confirm('Diesen Ordner mit allen darin enthaltenen Dateien löschen?')">
+<img src="http://uptobox.com/images/del.gif" /></a></td>
+</tr>
+<tr>
+<td class="tri"><img src="http://uptobox.com/images/folder.gif"
+style="margin-right: 2px; vertical-align: -3px;" /> <a href=
+"?op=my_files&amp;fld_id=908595" class="blue_link">TBBT S07
+(0)</a></td>
+<td style="width:30px; text-align:center;" class="tri"><a href=
+"?op=fld_edit&amp;fld_id=908595"><img src=
+"http://uptobox.com/images/edit.gif" /></a></td>
+<td style="width:30px; text-align:center;" class="tri"><a href=
+"?op=my_files&amp;fld_id=755744&amp;del_folder=908595&amp;token=77a28d6c644ff6ff40f5a02e24042802"
+onclick=
+"return confirm('Diesen Ordner mit allen darin enthaltenen Dateien löschen?')">
+<img src="http://uptobox.com/images/del.gif" /></a></td>
+</tr>
+<tr>
+<td class="tri"><img src="http://uptobox.com/images/folder.gif"
+style="margin-right: 2px; vertical-align: -3px;" /> <a href=
+"?op=my_files&amp;fld_id=1003361" class="blue_link">TBBT S08
+(1)</a></td>
+<td style="width:30px; text-align:center;" class="tri"><a href=
+"?op=fld_edit&amp;fld_id=1003361"><img src=
+"http://uptobox.com/images/edit.gif" /></a></td>
+<td style="width:30px; text-align:center;" class="tri"><a href=
+"?op=my_files&amp;fld_id=755744&amp;del_folder=1003361&amp;token=77a28d6c644ff6ff40f5a02e24042802"
+onclick=
+"return confirm('Diesen Ordner mit allen darin enthaltenen Dateien löschen?')">
+<img src="http://uptobox.com/images/del.gif" /></a></td>
+</tr>
+<tr>
+<td class="tri"><img src="http://uptobox.com/images/folder.gif"
+style="margin-right: 2px; vertical-align: -3px;" /> <a href=
+"?op=my_files&amp;fld_id=963645" class="blue_link">TBBT S09
+(13)</a></td>
+<td style="width:30px; text-align:center;" class="tri"><a href=
+"?op=fld_edit&amp;fld_id=963645"><img src=
+"http://uptobox.com/images/edit.gif" /></a></td>
+<td style="width:30px; text-align:center;" class="tri"><a href=
+"?op=my_files&amp;fld_id=755744&amp;del_folder=963645&amp;token=77a28d6c644ff6ff40f5a02e24042802"
+onclick=
+"return confirm('Diesen Ordner mit allen darin enthaltenen Dateien löschen?')">
+<img src="http://uptobox.com/images/del.gif" /></a></td>
+</tr>
+<tr>
+<td class="tri"><img src="http://uptobox.com/images/folder.gif"
+style="margin-right: 2px; vertical-align: -3px;" /> <a href=
+"?op=my_files&amp;fld_id=1028939" class="blue_link">TBBT S09 720p
+(6)</a></td>
+<td style="width:30px; text-align:center;" class="tri"><a href=
+"?op=fld_edit&amp;fld_id=1028939"><img src=
+"http://uptobox.com/images/edit.gif" /></a></td>
+<td style="width:30px; text-align:center;" class="tri"><a href=
+"?op=my_files&amp;fld_id=755744&amp;del_folder=1028939&amp;token=77a28d6c644ff6ff40f5a02e24042802"
+onclick=
+"return confirm('Diesen Ordner mit allen darin enthaltenen Dateien löschen?')">
+<img src="http://uptobox.com/images/del.gif" /></a></td>
+</tr>
+<tr>
+<td class="tri"><img src="http://uptobox.com/images/folder.gif"
+style="margin-right: 2px; vertical-align: -3px;" /> <a href=
+"?op=my_files&amp;fld_id=1112863" class="blue_link">TBBT S09
+Deutsch &amp; Englisch (4)</a></td>
+<td style="width:30px; text-align:center;" class="tri"><a href=
+"?op=fld_edit&amp;fld_id=1112863"><img src=
+"http://uptobox.com/images/edit.gif" /></a></td>
+<td style="width:30px; text-align:center;" class="tri"><a href=
+"?op=my_files&amp;fld_id=755744&amp;del_folder=1112863&amp;token=77a28d6c644ff6ff40f5a02e24042802"
+onclick=
+"return confirm('Diesen Ordner mit allen darin enthaltenen Dateien löschen?')">
+<img src="http://uptobox.com/images/del.gif" /></a></td>
+</tr>
+</tbody>
+</table>
+<table class="files">
+<tr style="text-align:center;">
+<td class="thead_green" style=
+"width:20px; ; font-size: 18px; border-radius:10px 0 0 0;">
+<input type="checkbox" id="checkall" name="file_id" value=
+"" /></td>
+<td class="thead_green" style="width:460px; font-size: 18px;">
+<a href=
+'?fld_id=755744&amp;op=my_files&amp;sort_field=file_name&amp;sort_order=down'>
+Dateiname/Beschreibung</a></td>
+<td class="thead_green" style="width:120px; font-size: 18px;">
+<a href=
+'?fld_id=755744&amp;op=my_files&amp;sort_field=file_size&amp;sort_order=down'>
+Dateigröße</a></td>
+<td class="thead_green" style="width:150px; font-size: 18px;"
+title="Anzahl Downloads"><a href=
+'?fld_id=755744&amp;op=my_files&amp;sort_field=file_downloads&amp;sort_order=down'>
+DL</a></td>
+<td class="thead_green" style="width:30px; font-size: 18px;">
+<a href=
+'?fld_id=755744&amp;op=my_files&amp;sort_field=file_public&amp;sort_order=down'>
+Pub</a></td>
+<td class="thead_green" style="width:250px; font-size: 18px;">
+<a href=
+'?fld_id=755744&amp;op=my_files&amp;sort_field=file_created&amp;sort_order=up'>
+Hochgeladen<img border="0" src=
+'http://uptobox.com/images/down.gif' /></a></td>
+<td class="thead_green" style="width:250px; font-size: 18px;">
+<a href=
+'?fld_id=755744&amp;op=my_files&amp;sort_field=file_last_download&amp;sort_order=down'>
+Letzter Download</a></td>
+<td class="thead_green" style="width:30px; font-size: 18px;">
+&nbsp;</td>
+<td class="thead_green" style=
+"width:30px; ; font-size: 18px; border-radius: 0 10px 0 0;">
+&nbsp;</td>
+</tr>
+<tr class="cell_files">
+<td class="style=">
+<div class="select"><input type="checkbox" name="file_id" value=
+"179347509" class="selectedrow" style='visibility:hidden' /></div>
+</td>
+<td><a href="http://uptobox.com/1u5lawwjiai1" class="grey_link">The
+Big Bang Theory - The Platonic Permutation (Clips).zip</a></td>
+<td>46.8 MB</td>
+<td></td>
+<td id="td179347509" class="pub"><input type="checkbox" name="pub"
+value="1" id="p179347509" checked="checked" onclick=
+"jah('?op=my_files&amp;file_id=179347509&amp;token=77a28d6c644ff6ff40f5a02e24042802&amp;set_public='+this.checked)" /></td>
+<td>2015-11-20</td>
+<td>2015-11-20 16:46:35</td>
+<td style="text-align:center;"><a href=
+"?op=file_edit&amp;file_code=1u5lawwjiai1"><img src=
+"http://uptobox.com/images/edit.gif" /></a></td>
+<td style="text-align:center;"><a href=
+"?op=my_files&amp;del_code=1u5lawwjiai1&amp;token=77a28d6c644ff6ff40f5a02e24042802"
+onclick="return confirm('Diese Datei löschen?')"><img src=
+"http://uptobox.com/images/del.gif" /></a></td>
+</tr>
+</table>
+<br />
+<br />
+<center>
+<div class="days">
+<h1>Videos UptoStream.com</h1>
+</div>
+</center>
+<br />
+<br />
+<table class="files2">
+<tbody>
+<tr style="text-align:center">
+<td class="thead_green" style=
+"width:250px;border-radius:10px 0 0 0;font-size: 18px;">
+Dateiname</td>
+<td class="thead_green" style="width:120px;font-size: 18px;">
+Qualität</td>
+<td class="thead_green" style="width:40px;font-size: 18px;">
+Sprache</td>
+<td class="thead_green" style="width:30px;font-size: 18px;">
+<a href='?fld_id=755744&amp;op=my_files&amp;sort_field=nb_stream&amp;sort_order=down'>
+Abrufe</a></td>
+<td class="thead_green" style="width:150px;font-size: 18px;">
+<a href=
+'?fld_id=755744&amp;op=my_files&amp;sort_field=last_stream&amp;sort_order=down'>
+Zuletzt gesehen</a></td>
+<td class="thead_green" style=
+"width:240px;border-radius:0 10px 0 0;font-size: 18px;">Status</td>
+</tr>
+<tr class="cell_files">
+<td style="width:250px">&nbsp;</td>
+<td style="width:120px">&nbsp;</td>
+<td style="width:40px">&nbsp;</td>
+<td style="width:150px">&nbsp;</td>
+<td style="width:240px">&nbsp;</td>
+<td style="width:240px">&nbsp;</td>
+</tr>
+</tbody>
+</table>
+<script>
+<![CDATA[
+
+                $(".files2 .cell_files").click(function() {
+                        if ($(this).next().css('display') == 'none') $(this).next().show( "slow" );
+                        else $(this).next().hide();
+
+                });
+]]>
+</script> <!--EXPORT BLOCK-->
+<div class="function_block"><input type="submit" name=
+"del_selected" class="btn" style="margin-right:10px;" value=
+"Löschen ausgewählt" onclick=
+"return confirm('Ausgewählte Dateien löschen?')" /> <select name=
+"to_folder" style="margin-left:350px;">
+<option value="0">/</option>
+<option value="857644">2BG</option>
+<option value="756392">Ajo Videos</option>
+<option value="1080595">Archive</option>
+<option value="1026818">Austin &amp; Ally</option>
+<option value="1059139">Bella and the Bulldogs</option>
+<option value="1078366">&nbsp;&nbsp;Deutsch &amp; Englisch</option>
+<option value="1015109">Boy Meets World</option>
+<option value="989210">Descendants</option>
+<option value="1024172">Emma, einfach magisch</option>
+<option value="1028936">Every witch way</option>
+<option value="1035671">Filme</option>
+<option value="1011671">Girl meets World</option>
+<option value="1046363">Good Luck Charlie</option>
+<option value="1078813">Hannah Montanna</option>
+<option value="1090084">&nbsp;&nbsp;Season 2</option>
+<option value="1093696">&nbsp;&nbsp;Season 3</option>
+<option value="1090090">&nbsp;&nbsp;Season 4 (Hannah Montana
+Forever)</option>
+<option value="1018601">Homeland</option>
+<option value="1018604">&nbsp;&nbsp;Homeland S05</option>
+<option value="919065">Hund mit Blog</option>
+<option value="919068">&nbsp;&nbsp;Hund mit Blog S01</option>
+<option value="932037">&nbsp;&nbsp;Hund mit Blog S02</option>
+<option value="892210">iCarly S01</option>
+<option value="899214">iCarly S02</option>
+<option value="1070878">K.C. Undercover</option>
+<option value="1109410">&nbsp;&nbsp;regular Quality</option>
+<option value="1060420">Liv and Maddie</option>
+<option value="1061545">&nbsp;&nbsp;Season 1</option>
+<option value="1061548">&nbsp;&nbsp;Season 2</option>
+<option value="1061551">&nbsp;&nbsp;Season 3</option>
+<option value="756389">logo</option>
+<option value="761467">OTR</option>
+<option value="998570">&nbsp;&nbsp;Violetta S02</option>
+<option value="1060288">Shake it up</option>
+<option value="1065388">Supergirl</option>
+<option value="1068028">&nbsp;&nbsp;1080p</option>
+<option value="1083649">&nbsp;&nbsp;1080p (DD)</option>
+<option value="1068025">&nbsp;&nbsp;720p</option>
+<option value="755744">TBBT</option>
+<option value="908592">&nbsp;&nbsp;TBBT S01</option>
+<option value="913878">&nbsp;&nbsp;TBBT S02</option>
+<option value="1088752">&nbsp;&nbsp;&nbsp;&nbsp;Deutsch &amp;
+Englisch</option>
+<option value="908598">&nbsp;&nbsp;TBBT S03</option>
+<option value="919062">&nbsp;&nbsp;TBBT S04</option>
+<option value="1003355">&nbsp;&nbsp;TBBT S05</option>
+<option value="1003358">&nbsp;&nbsp;TBBT S06</option>
+<option value="908595">&nbsp;&nbsp;TBBT S07</option>
+<option value="1003361">&nbsp;&nbsp;TBBT S08</option>
+<option value="963645">&nbsp;&nbsp;TBBT S09</option>
+<option value="1028939">&nbsp;&nbsp;TBBT S09 720p</option>
+<option value="1112863">&nbsp;&nbsp;TBBT S09 Deutsch &amp;
+Englisch</option>
+<option value="756386">TBBT Pro7</option>
+<option value="865927">TBBT S07 CBS</option>
+<option value="854638">TBBT S07 UKE4</option>
+<option value="1078468">The Odd Couple</option>
+<option value="1105093">The Suite Life of Zack and Cody</option>
+<option value="1105096">&nbsp;&nbsp;Season 1</option>
+<option value="1098130">The Suite Life on Deck</option>
+<option value="1098136">&nbsp;&nbsp;Season 2</option>
+<option value="1073161">The Thundermans</option>
+<option value="1078363">&nbsp;&nbsp;additional 1080p</option>
+<option value="981611">Violetta</option>
+<option value="1109071">&nbsp;&nbsp;mkv</option>
+<option value="932043">Voll vergeistert</option>
+<option value="916062">Zoo</option>
+<option value="1096591">&nbsp;&nbsp;Deutsch &amp; Englisch</option>
+<option value="1093765">&nbsp;&nbsp;WD Version</option>
+</select> <input type="submit" name="to_folder_copy" value="Kopie"
+class="btn" /> &nbsp; <input type="submit" name="to_folder_move"
+value="Verschieben" class="btn" /> <!-- </form> -->
+ 
+<!--<input type="submit" name="set_public_multi" value="Auswahl veröffentlichen" class="btn">-->
+ &nbsp; 
+<!--input type="submit" name="set_private" value="Veröffentlichung zurückziehen ausgewählt" class="btn2"-->
+ &nbsp;</div>
+</form>
+</div>
+</div>
+<script type="text/javascript" language="JavaScript">
+//<![CDATA[
+        $(document).ready(function(){
+                $("#xfiles input[name=file_id]").change( function(){ $(this).parent().parent().toggleClass('hi2'); } );
+                $("#selall").change(function(){ 
+                           var sel=this.checked;
+                           $("#xfiles input[name=file_id]:enabled").each(function(){
+                                   $(this).attr('checked',sel);
+                                   if(sel){$(this).parent().parent().addClass('hi2');} else {$(this).parent().parent().removeClass('hi2');}
+                           });
+                });
+        });
+//]]>
+</script> 
+<script language="JavaScript" type="text/javascript" charset=
+"UTF-8" src="http://uptobox.com/export_files.js">
+</script></div>
+</div>
+</div>
+<!--FOOTER-->
+<div id="footer">
+<div class="footer_content">
+<div class="footer_leftcol"><!--LOGO-->
+<!-- <img src="http://uptobox.com/images/logo.png" width="167" height="39" alt="UptoBox"> -->
+<!--INFOS-->
+<!-- <p class="footer_infos">. <a href="#" class="blue_link">Read more</a></p> -->
+<!--MENU-->
+<ul class="footer_menu">
+<li><a class="nav_link_footer" href=
+"http://uptobox.com">Startseite</a></li>
+<li><a class="nav_link_footer" href="faq.html">Q&amp;A</a></li>
+<!--<li><a class="nav_link_footer" href="#">Über uns</a></li>-->
+<li><a class="nav_link_footer" href=
+"tos.html">Nutzungsbedingungen</a></li>
+<li><a class="nav_link_footer" href=
+"http://uptobox.com/?op=advertising">Werbekunden</a></li>
+<li><a class="nav_link_footer" href=
+"http://uptobox.com/?op=reseller_program">Reseller</a></li>
+<li><a class="nav_link_footer" href=
+"mailto:uptobox.abuse@gmail.com">Abuse</a></li>
+<li><a class="nav_link_footer" href=
+"http://support.uptobox.com">Kundenservice</a></li>
+<li><a class="nav_link_footer" href=
+"http://uptobox.com/pages/about_us.html">Über uns</a></li>
+</ul>
+</div>
+<div class="footer_rightcol"><!--TWITTER FEED-->
+ <a href="https://www.facebook.com/Uptobox" rel="nofollow" target=
+"_blank"><img src="//uptobox.com/images/facebook_icon.png" width=
+"121px" height="25px" alt="Facebook" /></a> <a href=
+"https://twitter.com/Uptobox_com" rel="nofollow" target=
+"_blank"><img src="//uptobox.com/images/twitter_icon.png" width=
+"45px" height="25px" alt="Twitter" /></a></div>
+</div>
+</div>
+<div id="copyright">
+<div class="copyright_content">
+<div class="copyright_text" style="font-size:12px;">© 2011 - 2016
+<a href="#" class="blue_link">Uptobox.com</a> - Alle Rechte
+vorbehalten</div>
+<div class="socials"><iframe src=
+"//www.facebook.com/plugins/like.php?href=https%3A%2F%2Fwww.facebook.com%2FUptobox&amp;send=false&amp;layout=button_count&amp;width=0&amp;show_faces=false&amp;action=like&amp;colorscheme=light&amp;font=tahoma&amp;height=21&amp;appId=94277056922"
+scrolling="no" frameborder="0" style=
+"border:none; overflow:hidden; width:117px; height:21px;"
+allowtransparency="true"></iframe></div>
+<div class="copyright_text" style=
+"font-size:11px; margin-top:2px; float:right;">
+<!--<span style="font-size:11px;">Design by <a href="http://www.ookamistudio.com/" class="blue_link" style="font-size:11px;" target="blank">OokamiStudio.com</a></span>--></div>
+</div>
+</div>
+<div id='biscuitNomNomNom'></div>
+<div id='biscuitMiamMiamMiam'></div>
+<script>
+<![CDATA[
+        function getCookie(name) {
+                var re = new RegExp(name + "=([^;]+)");
+            var value = re.exec(document.cookie);
+            return (value != null) ? unescape(value[1]) : null;
+         }
+
+        var cookie = getCookie("xfss");
+        var lang = getCookie("lang");
+
+   if (cookie != null) {
+        $('#biscuitNomNomNom').html('<iframe width="0" height="0" src="https://uptostream.com/biscuit.html?xfss=' + cookie + '&lang=' + lang + '" frameborder="0" ><\/iframe>');
+        $('#biscuitMiamMiamMiam').html('<iframe width="0" height="0" src="https://payments.cometodress.com/biscuit.html?xfss=' + cookie + '&lang=' + lang + '" frameborder="0" ><\/iframe>');
+   }
+]]>
+</script> <!-- Piwik
+<script type="text/javascript">
+  var _paq = _paq || [];
+  _paq.push(['trackPageView']);
+  _paq.push(['enableLinkTracking']);
+  (function() {
+    var u="//stats.uptobox.com/matrix/";
+    _paq.push(['setTrackerUrl', u+'piwik.php']);
+    _paq.push(['setSiteId', 6]);
+    var d=document, g=d.createElement('script'), s=d.getElementsByTagName('script')[0];
+    g.type='text/javascript'; g.async=true; g.defer=true; g.src=u+'piwik.js'; s.parentNode.insertBefore(g,s);
+  })();
+</script>
+<noscript><p><img src="//stats.uptobox.com/matrix/piwik.php?idsite=6" style="border:0;" alt="" /></p></noscript>
+ End Piwik Code -->
+ <!-- Widget START -->
+<script src=
+'//ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js' type=
+'text/javascript'>
+</script>
+<style>
+<![CDATA[
+#fanback {
+display:none;
+background:rgba(0,0,0,0.8);
+width:100%;
+height:100%;
+position:fixed;
+top:0;
+left:0;
+z-index:99999;
+}
+#fan-exit {
+width:100%;
+height:100%;
+}
+#UTBdiv {
+background:white;
+width:420px;
+height:270px;
+position:absolute;
+top:58%;
+left:63%;
+margin:-220px 0 0 -375px;
+-webkit-box-shadow: inset 0 0 50px 0 #939393;
+-moz-box-shadow: inset 0 0 50px 0 #939393;
+box-shadow: inset 0 0 50px 0 #939393;
+-webkit-border-radius: 5px;
+-moz-border-radius: 5px;
+border-radius: 5px;
+margin: -220px 0 0 -375px;
+}
+#TheUTBWidgets {
+float:right;
+cursor:pointer;
+background:url(https://3.bp.blogspot.com/-NRmqfyLwBHY/T4nwHOrPSzI/AAAAAAAAAdQ/8b9O7O1q3c8/s1600/TheBlogWidgets.png) repeat;
+height:15px;
+padding:20px;
+position:relative;
+padding-right:40px;
+margin-top:-20px;
+margin-right:-22px;
+}
+.remove-borda {
+height:1px;
+width:366px;
+margin:0 auto;
+background:#F3F3F3;
+margin-top:16px;
+position:relative;
+margin-left:20px;
+}
+#linkit,#linkit a.visited,#linkit a,#linkit a:hover {
+color:#80808B;
+font-size:10px;
+margin: 0 auto 5px auto;
+float:center;
+}
+]]>
+</style>
+<script type='text/javascript'>
+//<![CDATA[
+jQuery.cookie = function (key, value, options) {
+ 
+// key and at least value given, set cookie...
+if (arguments.length > 1 && String(value) !== "[object Object]") {
+options = jQuery.extend({}, options);
+ 
+if (value === null || value === undefined) {
+options.expires = -1;
+}
+ 
+if (typeof options.expires === 'number') {
+var days = options.expires, t = options.expires = new Date();
+t.setDate(t.getDate() + days);
+}
+ 
+value = String(value);
+ 
+return (document.cookie = [
+encodeURIComponent(key), '=',
+options.raw ? value : encodeURIComponent(value),
+options.expires ? '; expires=' + options.expires.toUTCString() : '', // use expires attribute, max-age is not supported by IE
+options.path ? '; path=' + options.path : '',
+options.domain ? '; domain=' + options.domain : '',
+options.secure ? '; secure' : ''
+].join(''));
+}
+ 
+// key and possibly options given, get cookie...
+options = value || {};
+var result, decode = options.raw ? function (s) { return s; } : decodeURIComponent;
+return (result = new RegExp('(?:^|; )' + encodeURIComponent(key) + '=([^;]*)').exec(document.cookie)) ? decode(result[1]) : null;
+};
+//]]>
+</script> 
+<script type='text/javascript'>
+//<![CDATA[
+jQuery(document).ready(function($){
+if($.cookie('popup_user_login') != 'yes'){
+$('#fanback').delay(2000).fadeIn('medium');
+$('#TheUTBWidgets, #fan-exit').click(function(){
+$('#fanback').stop().fadeOut('medium');
+});
+}
+$.cookie('popup_user_login', 'yes', { path: '/', expires: 15 });
+});
+//]]>
+</script>
+<div id='fanback'>
+<div id='fan-exit'></div>
+<div id='UTBdiv'>
+<div id='TheUTBWidgets'></div>
+<div class='remove-borda'></div>
+<iframe allowtransparency='true' frameborder='0' scrolling='no'
+src='//www.facebook.com/plugins/likebox.php?%20href=http://www.facebook.com/Uptobox&amp;width=402&amp;height=255&amp;colorscheme=light&amp;show_faces=true&amp;show_border=false&amp;stream=false&amp;header=false'
+style=
+'border: none; overflow: hidden; margin-top: -19px; width: 402px; height: 230px;'></iframe></div>
+</div>
+<!-- Widget END -->
+</body>
+</html>

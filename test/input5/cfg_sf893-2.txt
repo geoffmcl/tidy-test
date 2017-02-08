@@ -1,0 +1,4 @@
+// sf893 - 2008-09-25  Sorin Marian Nasoi
+indent-spaces: 0
+output-xml: yes
+output-xhtml: yes

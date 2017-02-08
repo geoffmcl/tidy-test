@@ -1,0 +1,4 @@
+doctype: omit
+indent: auto
+indent-spaces: 4
+wrap: 0

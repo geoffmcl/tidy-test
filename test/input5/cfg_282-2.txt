@@ -1,0 +1,2 @@
+--omit-optional-tags: yes
+--hide-endtags: yes 

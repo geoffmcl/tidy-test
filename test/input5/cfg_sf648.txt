@@ -1,0 +1,23 @@
+// SF Bug #648
+add-xml-decl: 1
+add-xml-space: 1
+alt-text: alt
+clean: 1
+drop-empty-paras: 1
+enclose-block-text: 1
+enclose-text: 1
+indent-cdata: 1
+output-xhtml: 1
+output-html: 0
+break-before-br: 1
+indent: 1
+indent-attributes: 1
+indent-spaces: 4
+indent-cdata: 1
+tab-size: 1
+vertical-space: 1
+wrap: 0
+wrap-asp: 0
+wrap-php: 0
+wrap-sections: 0
+tidy-mark: 0

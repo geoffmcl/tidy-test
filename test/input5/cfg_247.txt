@@ -1,0 +1,3 @@
+drop-empty-elements: false
+show-info: false
+show-body-only: true

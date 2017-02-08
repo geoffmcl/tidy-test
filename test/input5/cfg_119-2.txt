@@ -1,0 +1,5 @@
+show-info: no
+tidy-mark: no
+// show-body-only: yes
+drop-empty-elements: no
+drop-proprietary-attributes: no

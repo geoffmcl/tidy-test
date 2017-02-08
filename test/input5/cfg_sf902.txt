@@ -1,0 +1,18 @@
+# Usage:
+#     tidy -config tidy.cfg {file} ...
+#
+# This should work for all Sweet XML files, provided that the
+# appropriate elements have the  xml:space="preserve" attribute,
+# for example:   <CodeLine xml:space="preserve">
+# See:  tidy -help-config
+# Command line version of this file:
+#   tidy --indent-attributes=true --indent-spaces=1 --indent=true --input-encoding=utf8 --output-encoding=utf8 -xml -q --wrap=0 {file}
+#-------------------------------------------------------------------
+indent-attributes:          true
+indent-spaces:              1
+indent:                     true
+input-encoding:             utf8
+output-encoding:            utf8
+input-xml:                  true
+quiet:                      true
+wrap:                       0

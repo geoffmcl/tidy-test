@@ -1,0 +1,4 @@
+tidy-mark: no
+show-info: no 
+new-empty-tags: submit-button
+show-body-only: yes

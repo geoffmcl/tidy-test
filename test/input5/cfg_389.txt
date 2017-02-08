@@ -1,0 +1,6 @@
+// strange although wrap-attributes: no, wraps the attribute here???
+indent: yes
+input-xml: yes
+output-xml: yes
+wrap: 0
+show-info: no

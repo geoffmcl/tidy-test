@@ -1,0 +1,4 @@
+merge-divs: no
+input-xml: no
+output-xml: yes
+tidy-mark: no

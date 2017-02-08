@@ -1,0 +1,27 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN">
+<!-- no doctype declaration, too -->
+<!-- <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"> -->
+<!-- <html xmlns="http://www.w3.org/1999/xhtml"> -->
+<!-- <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"> -->
+<!-- <html xmlns="http://www.w3.org/1999/xhtml"> -->
+<!-- <!DOCTYPE html PUBLIC "-//IETF//DTD HTML 2.0//EN"> -->
+<!-- <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 3.2 Final//EN"> -->
+<!-- <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML Basic 1.0//EN" "http://www.w3.org/TR/xhtml-basic/xhtml-basic10.dtd"> -->
+<html>
+<!--
+     Depending on whether Tidy is treating this document as proprietary or
+     strict, we should generate warnings or errors for the attributes and
+     elements that are not allowed.
+-->
+<head>
+<title>Test</title>
+</head>
+<body>
+<marquee fake_attribute="I'm a proprietary attribute">Marquee is proprietary.</marquee>
+<font size="+1">Font isn't allowed in strict documents.</font>
+<acronym>Acronym is deprecated, too.</acronym>
+<p jose="joseph">
+This is a valid paragraph but contains a proprietary attribute.
+</p>
+</body>
+</html>

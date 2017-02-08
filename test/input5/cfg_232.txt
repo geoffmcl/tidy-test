@@ -1,0 +1,2 @@
+show-body-only: yes
+show-info: no

@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<head>
+<meta charset=utf-8>
+<title>markup inside a code block should be ignored. #94</title>
+</head>
+<body>
+<pre>
+<code class="xml">
+<feed xmlns="http://www.w3.org/1999/xhtml">
+  <title>Alice's posts</title>
+  <entry>
+    <id>foo</id>
+    <author>
+      <name>alice@example.com</name> 
+      <id>acct:alice@example.com</id>
+    </author>
+    <published>2012-06-01T12:00:00Z</published>
+    <content>This is my newest post!</content>
+  </entry>
+</feed>
+</code>
+</pre>
+</body>
+</html>

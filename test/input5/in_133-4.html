@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="utf-8" />
+
+  <title>Script indenting not correct after fix for #133</title>
+  <script type="application/ecmascript">
+  <![CDATA[
+  <!--
+  function isLessThan()
+  {
+    var a = 2, b = 3;
+    if (a < b) alert("a less than b");
+    return ( a < b );
+  }
+  -->
+  ]]>
+  </script>
+</head>
+
+<body>
+  <script>
+  <![CDATA[
+  function round_again()
+  {
+    for ( ix=0; ix < 5; ++ix )
+    {
+      alert( "Shivver me timbers " + ix );
+    }
+  }
+  ]]>
+  </script>
+</body>
+</html>

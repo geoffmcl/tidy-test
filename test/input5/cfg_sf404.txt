@@ -1,0 +1,4 @@
+// from: https://sourceforge.net/p/tidy/bugs/404/
+new-blocklevel-tags: asp:calendar, todaydaystyle, selectorstyle, nextprevstyle, dayheaderstyle, selecteddaystyle, titlestyle, weekenddaystyle, othermonthdaystyle
+// eof
+

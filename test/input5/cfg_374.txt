@@ -1,0 +1,7 @@
+doctype: strict
+output-xhtml: yes
+tidy-mark: no
+indent: no
+wrap: 0
+enclose-text: yes
+show-body-only: yes

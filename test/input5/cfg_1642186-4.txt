@@ -1,0 +1,5 @@
+skip-quotes: yes
+indent: auto
+tidy-mark: no
+clean: yes
+show-info: no

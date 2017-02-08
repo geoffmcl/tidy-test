@@ -1,0 +1,10 @@
+show-info: no
+tidy-mark: no
+show-body-only: yes
+drop-empty-elements: no
+drop-proprietary-attributes: no
+new-blocklevel-tags: flag-icon
+// new-empty-tags: flag-icon
+// new-inline-tags: flag-icon
+// new-pre-tags: flag-icon
+

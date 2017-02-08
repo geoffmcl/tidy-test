@@ -1,0 +1,2 @@
+input-encoding: win1252
+output-encoding: latin1

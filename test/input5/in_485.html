@@ -1,0 +1,13 @@
+<form class="full-height-container"
+        flex=""
+        id="patient-plan-form"
+        layout="column"
+        layout-fill=""
+        name="planForm"
+        ng-cloak=""
+        ng-show="$ctrl.arePlansLoaded"
+        novalidate=""
+        rxms-patient-focus-me="{{($ctrl.isUpdateView && $ctrl.numOfActivePlans == 0)}}"
+        tabindex="{{(!$ctrl.isUpdateView || $ctrl.patientContext ==2) && $ctrl.numOfActivePlans > 1 ? 0 : -1}}">
+
+

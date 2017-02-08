@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>ambiguous/unambiguous ampersand #207</title>
+</head>
+<body>
+<ul>
+<li>Bare unambiguous ampersand - a & b - vok - TWF</li>
+<li>Ambiguous or not?</li>
+<li>
+<ul>
+<li>&123 - VF - TWF</li>
+<li>foo&<i>bar</i> - vok - TWF</li>
+<li>foo&&& bar - vok - TWF</li>
+<li><a href="http://example.com/?x=l&y=2">foo</a> - VF - TWF</li>
+<li><a href="http://example.com/?x=l&2">bar</a> - VF - TWF</li>
+<li>foo &0 bar - VF - TWF</li>
+<li>foo &lolwat bar - VF - TWF</li>
+</ul>
+</li>
+<li>Missing semi-colon</li>
+<li>
+<ul>
+<li> &amp - VF - TWF</li>
+<li> &copy - VF - TWF</li>
+<li> &not - VF - TWF</li>
+</ul>
+</li>
+</ul>
+<p>Key - VF=Validator Fail, vok=validator ok, TWF=Tidy Warn and fix</p>
+</body>
+</html>

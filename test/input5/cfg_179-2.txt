@@ -1,0 +1,17 @@
+// html options
+drop-font-tags: true
+hide-comments: true
+show-body-only: true
+
+// diagnostics
+show-errors: 0
+show-info: false
+show-warnings: false
+
+// pretty print
+indent: true
+indent-spaces: 4
+wrap: 120
+
+// misc
+quiet: true

@@ -1,0 +1,8 @@
+// cfg_342-3.txt
+drop-empty-elements: no
+wrap: 0
+output-xhtml: yes
+// tidy-mark: no
+doctype: "user"
+numeric-entities: yes
+char-encoding: utf8

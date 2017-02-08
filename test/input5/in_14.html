@@ -1,0 +1,21 @@
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en-GB" lang="en-GB">
+<head>
+<title>Content of script tags without type get wrapped into uncommented CDATA #14</title>
+</head>
+<body class=" x ">
+<script>
+    try { top.document.domain } catch (e) {
+        var f = function() { document.body.innerHTML = ''; }
+        setInterval(f,1);
+        if (document.body) document.body.unload = f;
+    }
+</script>
+<div id="skip-links">
+    <p class="skip-link-p">
+        Skip to: 
+        <a accesskey="1" class="skip-link" href="#content">content</a>, 
+        <a accesskey="2" class="skip-link" href="#nav-links">navigation</a>
+    </p>
+</div>
+</body>
+</html>

@@ -1,0 +1,4 @@
+show-body-only:yes
+show-input:no
+tidy-mark:no
+show-info:no

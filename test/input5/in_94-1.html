@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset=utf-8>
+<title>markup inside a code block should be ignored. #94</title>
+</head>
+<body>
+<ul>
+<li><a>XML</a></li>
+</ul>
+<p>Retrieve all posts from "alice@example.com":
+GET /alice@example.com/content/posts</p>
+<pre class="prettyprint">
+<code class="xml">
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <title>Alice's posts</title>
+  <entry>
+    <id>foo</id>
+    <author>
+      <name>alice@example.com</name> 
+      <id>acct:alice@example.com</id>
+    </author>
+    <published>2012-06-01T12:00:00Z</published>
+    <content>This is my newest post!</content>
+  </entry>
+  <entry>
+    <id>bar</id>
+    <author>
+      <name>alice@example.com</name> 
+      <id>acct:alice@example.com</id>
+    </author>
+    <published>2012-05-31T12:00:00Z</published>
+    <content>June starts tomorrow.</content>
+  </entry>
+  <entry>
+    <id>baz</id>
+    <author>
+      <name>alice@example.com</name> 
+      <id>acct:alice@example.com</id>
+    </author>
+    <published>2012-05-30T12:00:00Z</published>
+    <content>Feeling good today!</content>
+  </entry>
+</feed>
+
+</body>
+</html>

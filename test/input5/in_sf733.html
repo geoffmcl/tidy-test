@@ -1,0 +1,55 @@
+<?php if (FALSE):?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />
+<?php endif; include ("$IP_TMPL_DIR/pretitle.phtml"); ?>
+<meta name="robots" content="noindex,nofollow"/>
+
+<title>Test File</title>
+
+<style type="text/css">
+p{font-family : verdana}
+</style>
+
+<script type="text/javascript">
+var foo=bar;
+</script>
+
+<?php if (FALSE):?>
+</head>
+<body>
+<?php
+endif;
+include("$IP_TMPL_DIR/banner.php");
+?>
+
+<p>to see the bug, run:</p>
+
+<blockquote><kbd>tidy -ashtml testcase.html</kbd></blockquote>
+
+<p>on this file and note that the close of the body and html tags is now outside the PHP PI</p>
+
+<h4>From</h4>
+
+<pre>
+&lt;?php
+include("$IP_TMPL_DIR/trailer.php");
+if(FALSE){ ?&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+&lt;?php }?&gt;
+</pre>
+
+<h4>To</h4>
+
+<pre>
+&lt;?php
+include("$IP_TMPL_DIR/trailer.php");
+if(FALSE){ ?&gt;
+&lt;?php }?&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</pre>
+
+<?php include("$IP_TMPL_DIR/trailer.php"); if(FALSE){ ?></body></html><?php }?>
+

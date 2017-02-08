@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Tidy does not allow block elements in caption #196</title>
+</head>
+<body>
+<table>
+  <caption>
+    <nav><button>Test</button></nav>
+  </caption>
+  <tbody>
+    <tr><td>Lorem ipsum</td></tr>
+  </tbody>
+</table>
+</body>
+</html>

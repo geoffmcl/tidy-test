@@ -1,0 +1,3 @@
+wrap-attributes: yes
+indent-with-tabs: yes
+indent-attributes: yes

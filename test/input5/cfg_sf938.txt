@@ -1,0 +1,9 @@
+// char-encoding: raw
+indent-attributes: yes
+indent: auto
+input-xml: yes
+literal-attributes: yes
+output-xml: yes
+quiet: yes
+quote-marks: yes
+// tidy-mark: no

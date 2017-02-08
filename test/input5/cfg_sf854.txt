@@ -1,0 +1,7 @@
+wrap: 99
+indent: yes
+break-before-br: yes
+indent-attributes: yes
+vertical-space: yes
+indent-spaces: 1
+tidy-mark: no

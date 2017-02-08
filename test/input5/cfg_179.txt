@@ -1,0 +1,4 @@
+// show-body-only: yes
+show-info: no
+vertical-space: auto
+wrap: 0

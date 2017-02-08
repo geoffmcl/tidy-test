@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>newlines inserted in pre tags #158</title>
+<style>
+pre { border-style: solid; }
+p.nob { 
+margin : 0 0 0 0;
+border-style : none;
+padding : 0 0 0 0;
+} 
+</style>
+</head>
+<body>
+<p class="nob">before</p>
+<pre>No newline here.
+    Some indented content with newline.
+Again no newline</pre>
+<p class="nob">after</p>
+</body>
+</html>

@@ -1,0 +1,3 @@
+// sf378
+char-encoding: latin1
+// eof

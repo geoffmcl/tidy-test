@@ -1,0 +1,6 @@
+show-info: no
+tidy-mark: no
+drop-empty-elements: no
+drop-proprietary-attributes: no
+new-blocklevel-tags: flag-icon
+

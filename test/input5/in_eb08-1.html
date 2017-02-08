@@ -1,0 +1,42 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head><title>jf &amp; test </title>
+<base href=http://this.that.com>
+</head>
+<body>
+<form action=www.eklhad.net:1200 onreset="return r()">
+<textarea name=comment>hello&reg;world<P></textarea>
+<input name=thoughts value=dogs>
+<select name=color multiple>
+<option value=g>green
+<option value=r>red
+</select>
+<input type=submit name=sendit value=pushit>
+<input type=reset name=restart>
+<input type=button name=spare value=adjust onclick=adjust()>
+</form>
+hello&copy; 	 world <span id=drop class=j>snorkasaurus</span>
+<A name=jkl href="http://www.foobar.com/path?this=that&amp;copy=bob">AT&amp;T <img src=barf alt=wiggleroom></A>
+<script type=text/javascript>
+document.forms[0].thoughts.value = "hoses";
+document.forms[0].color.options[1].selected = true;
+function r() {
+var t = document.createTextNode("big bird");
+var drop = document.getElementById("drop");
+drop.replaceChild(t, drop.childNodes[0]);
+return true;
+}
+document.writeln("<script>alert('secondary script');<\/script>");
+var newdiv = document.createElement("div");
+newdiv.innerHTML=
+"<OL><li>apple<li id=banana>banana<li>cherry</" + "OL>" +
+"<UL><LI>easy<LI>breezy<" + "/UL>";
+document.body.appendChild(newdiv);
+t = document.createTextNode("Hoo ha ha!");
+document.body.insertBefore(t, newdiv);
+function adjust() { window.location.href = "www.eklhad.net"; }
+alert("alls well");
+</script>
+</body>
+</html>
+

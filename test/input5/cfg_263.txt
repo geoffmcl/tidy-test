@@ -1,0 +1,7 @@
+// New Feature - no vertical space
+vertical-space: auto
+wrap: 0
+show-info: no
+tidy-mark: no
+// not sure why you added this (as -access 1)
+// accessibility-check: 1

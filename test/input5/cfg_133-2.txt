@@ -1,0 +1,9 @@
+indent: yes
+indent-spaces: 4
+wrap: 0
+tab-size: 4
+// newline:LF
+// quiet:yes
+// show-warnings:no
+add-xml-space: yes
+tidy-mark: no

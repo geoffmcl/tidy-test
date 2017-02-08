@@ -1,0 +1,25 @@
+<?php
+/*--------------------------------------------------------------
+# October 2010 (for Joomla 1.6)
+# Copyright (C) Basketcase Software, Inc. All Rights Reserved.
+# License: Copyrighted Commercial Software
+# Website: http://www.basketcasesoftware.com
+# Support: contact@basketcasesoftware.com
+---------------------------------------------------------------*/
+defined('_JEXEC') or die ('Restricted access');
+// including base setup file
+include_once (JPATH_ROOT."/templates/".$this->template.'/lib/php/dj_setup.php');
+?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="<?php echo $this->language; ?>" lang="<?php echo $this->language; ?>" dir="<?php echo $direction; ?>" >
+<head>
+<jdoc:include type="head" />
+<?php
+// including template header files
+include_once (JPATH_ROOT."/templates/".$this->template.'/lib/php/dj_head.php');
+JHTML::_('behavior.mootools');
+?>
+</head>
+<body>
+</body>
+</html>

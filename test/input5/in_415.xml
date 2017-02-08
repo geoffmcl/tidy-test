@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<root>
+
+<totalfound>1</totalfound>
+
+<totalsearched>3941627</totalsearched>
+
+<document>
+
+<rank>1</rank>
+
+<title><![CDATA[Detecting and labeling representative nodes for network-based semi-supervised learning]]></title>
+
+<authors><![CDATA[Bilz&#x00E3;  Ara&#x00FA; jo;  Liang Zhao]]></authors>
+
+<affiliations><![CDATA[Dept. of Comput. Sci., Univ. of Sao Paulo, Sa&#x0303;o Carlos, Brazil]]></affiliations>
+
+<controlledterms>
+
+<term><![CDATA[complex networks]]></term>
+
+<term><![CDATA[learning (artificial intelligence)]]></term>
+
+<term><![CDATA[pattern classification]]></term>
+
+<term><![CDATA[pattern clustering]]></term>
+
+<term><![CDATA[principal component analysis]]></term>
+
+</controlledterms>
+
+<uncontrolledterms>
+
+<term><![CDATA[Girvan and Newman homogeneous networks]]></term>
+
+<term><![CDATA[Lancichinetti-Fortunato-Radicchi heterogeneous networks]]></term>
+
+<term><![CDATA[NBSSL classification performance]]></term>
+
+<term><![CDATA[clustering coefficient]]></term>
+
+<term><![CDATA[heuristic criteria]]></term>
+
+<term><![CDATA[interconnecting modular structures]]></term>
+
+<term><![CDATA[network topology]]></term>
+
+<term><![CDATA[network-based semisupervised learning]]></term>
+
+<term><![CDATA[principal components analysis]]></term>
+
+<term><![CDATA[representative node detection]]></term>
+
+<term><![CDATA[representative node labeling]]></term>
+
+<term><![CDATA[vector-based data sets]]></term>
+
+</uncontrolledterms>
+
+<thesaurusterms>
+
+<term><![CDATA[Benchmark testing]]></term>
+
+<term><![CDATA[Clustering algorithms]]></term>
+
+<term><![CDATA[Complex networks]]></term>
+
+<term><![CDATA[Indexes]]></term>
+
+<term><![CDATA[Labeling]]></term>
+
+<term><![CDATA[Numerical analysis]]></term>
+
+<term><![CDATA[Principal component analysis]]></term>
+
+</thesaurusterms>
+
+<pubtitle><![CDATA[Neural Networks (IJCNN), The 2013 International Joint Conference on]]></pubtitle>
+
+<punumber><![CDATA[6691896]]></punumber>
+
+<pubtype><![CDATA[Conference Publications]]></pubtype>
+
+<publisher><![CDATA[IEEE]]></publisher>
+
+<py><![CDATA[2013]]></py>
+
+<spage><![CDATA[1]]></spage>
+
+<epage><![CDATA[8]]></epage>
+
+<abstract><![CDATA[Network-based Semi-Supervised Learning (NBSSL) propagates labels in networks constructed from the original vector-based data sets taking advantage of the network topology. However, the NBSSL classification performance often varies according to the representativeness of the labeled data instances. Herein, we address this issue. We adopt heuristic criteria for selecting data items for manual labeling based on complex networks centrality measures. The numerical analysis are performed on Girvan and Newman homogeneous networks and Lancichinetti-Fortunato-Radicchi heterogeneous networks. Counterintuitively, we found that the highly connective nodes (hubs) are usually not representative, in the sense that random samples performs as well as them or even better. Other than expected, nodes with high clustering coefficient are good representatives of the data in homogeneous networks. On the other hand, in heterogeneous networks, nodes with high betweenness are the good representatives. A high clustering coefficient means that the node lies in a much connected motif (clique) and a high betweenness means that the node lies interconnecting modular structures. Moreover, aggregating the complex networks measures through Principal Components Analysis, we observed that the second principal component (Z<sub>2</sub>) exhibits potentially promising properties. It appears that Z<sub>2</sub> is able to extract discriminative characteristics allowing finding good representatives of the data. Our results reveal that the performance of the NBSSL can be significantly improved by finding and labeling representative data instances.]]></abstract>
+
+<issn><![CDATA[2161-4393]]></issn>
+
+<isbn><![CDATA[978-1-4673-6128-6]]></isbn>
+
+<htmlFlag><![CDATA[1]]></htmlFlag>
+
+<arnumber><![CDATA[6706948]]></arnumber>
+
+<doi><![CDATA[10.1109/IJCNN.2013.6706948]]></doi>
+
+<publicationId><![CDATA[6706948]]></publicationId>
+
+<partnum><![CDATA[6706948]]></partnum>
+
+<mdurl><![CDATA[http://ieeexplore.ieee.org/xpl/articleDetails.jsp?tp=&arnumber=6706948&contentType=Conference+Publications]]></mdurl>
+
+<pdf><![CDATA[http://ieeexplore.ieee.org/stamp/stamp.jsp?arnumber=6706948]]></pdf>
+
+</document>
+
+</root>

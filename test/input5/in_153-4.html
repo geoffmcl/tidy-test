@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="generator" content=
+"HTML Tidy for HTML5 for Windows version 5.3.15">
+<meta charset="utf-8">
+<title>Tidy fails if html contains sectioned if/endif comment
+#153</title>
+</head>
+<body>
+<p>Para 1 - before if</p>
+<!--[if !mso 9]><!-->
+<p>Para 2 in if</p>
+<![endif]>
+<p>Para 3 - tidy missed paragraph</p>
+</body>
+</html>
