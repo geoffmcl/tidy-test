@@ -12,8 +12,8 @@ set( tidy-test_MAJOR 5 )
 set( tidy-test_MINOR 0 )
 set( tidy-test_POINT 0 )
 
-# Option to test libtidy-0.99 compatibility
-option( USE_TIDY5_API "Set OFF to test backward compatibility to libtidy-0.99, else 5.0.0 onwards." ON )
+# Option to test libtidy-0.99, libtidy-5.0.0, ... compatibility - should FAIL with 5.5.5 onwards
+option( USE_TIDY5_API "Set ON to test backward compatibility to libtidy-0.99, 5.0.0, onwards." OFF )
 
 if(CMAKE_COMPILER_IS_GNUCXX)
     set( WARNING_FLAGS -Wall )
@@ -105,7 +105,7 @@ if (USE_TIDY5_API)
     message(STATUS "*** Using Tidy 5 API")
     add_definitions( -DUSE_TIDY5_API )
 else()
-   message(STATUS "*** Using Tidy 0.99 API")
+   message(STATUS "*** Using current Tidy API - no locale test")
 endif()
 
 # Total libs 0, exes 1

@@ -7,7 +7,7 @@
 @set TMPSRC=..
 @set TMP3RD=F:\Projects\software
 @set ADDINST=0
-@REM set BOOST_ROOT=X:\install\msvc100\boost
+@REM set BOOST_ROOT=X:\install\msvc%VCVERS%0-64\boost
 @REM if NOT EXIST %BOOST_ROOT%\nul goto NOBOOST
 
 @call chkmsvc %TMPPRJ%
@@ -23,7 +23,7 @@
 @set TMPINST=F:\Projects\software.x64
 @REM ###########################################
 @REM ############################################
-@REM NOTE: MSVC 10 INSTALL LOCATION
+@REM NOTE: MSVC %VCVERS% INSTALL LOCATION
 @REM Adjust to suit your environment
 @REM ##########################################
 @set GENERATOR=Visual Studio %VCVERS% Win64
