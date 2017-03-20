@@ -1,1 +1,4 @@
+
+-xml -w 50 --show-info no F:\Projects\tidy-test\test\input5\in_508.html
+
 F:\Projects\tidy-test\test\input5\in_451.html
