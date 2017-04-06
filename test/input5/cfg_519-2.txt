@@ -1,0 +1,1 @@
+input-encoding: win1252
