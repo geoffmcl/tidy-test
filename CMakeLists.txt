@@ -398,4 +398,18 @@ if (MSVC)
     endif ()
 endif ()
 
+################################################################
+### build the sample2 code
+set(name sample2)
+set(dir src)
+set(${name}_SRCS
+    ${dir}/${name}.c
+    )
+add_executable( ${name} ${${name}_SRCS} )
+target_link_libraries( ${name} ${add_LIBS} )
+if (MSVC)
+    set_target_properties( ${name} PROPERTIES DEBUG_POSTFIX d )
+endif ()
+
+################################################################
 # eof
