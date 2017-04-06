@@ -252,22 +252,15 @@ int main(int argc, char **argv )
         rc = ( tidyOptSetBool(tdoc, TidyForceOutput, yes) ? rc : -1 );
     if ( rc >= 0 )
         rc = tidySaveBuffer( tdoc, &output );          // Pretty Print result to output buffer
+    if (rc < 0)
+        SPRTF("A severe error (%d) occurred.\n", rc);
 
-    if ( rc >= 0 )
-    {
-        SPRTF("The information summary:\n");
-        tidyErrorSummary(tdoc);
-        SPRTF("Tidy general nformation:\n");
-        tidyGeneralInfo(tdoc);
-
-        if ( rc > 0 )
-            SPRTF( "Diagnostics errors:\n\n%s", errbuf.bp );
-
-        SPRTF( "\nAnd here are the result:\n\n%s", output.bp );
-
-    }
-    else
-        SPRTF( "A severe error (%d) occurred.\n", rc );
+    SPRTF("Add information summary:(%u)\n", errbuf.size);
+    tidyErrorSummary(tdoc);
+    SPRTF("Add general nformation:(%u)\n", errbuf.size);
+    tidyGeneralInfo(tdoc);
+    SPRTF( "Diagnostics errors:(%u)\n\n%s", errbuf.size, errbuf.bp );
+    SPRTF( "\nAnd here are the result:(%u)\n\n%s", output.size, output.bp );
 
 Exit:
     tidyBufFree( &output );
