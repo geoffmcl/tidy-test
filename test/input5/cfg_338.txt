@@ -1,0 +1,3 @@
+tidy-mark: no
+show-info: no
+accessibility-check: 3
