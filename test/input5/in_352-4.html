@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>issue 352, illegal character in path segment</title>
+</head>
+<body>
+8<a href="€">Technically Valid html5</a>
+<br>
+10<a href="http://€.com">technically valid HTML5</a>
+<br>
+12<a href=":|">invalid HTML5</a>
+<br>
+14<a href="http://[">also invalid</a>
+<br>
+16<a href="http://www.example.com">valid</a>
+<br>
+<IMG SRC="circleincircle.gif"
+   HEIGHT=158 WIDTH=158 ALT="Click the O!" BORDER=0
+   USEMAP="#map1"><BR>
+<br>
+22<a href="%E2%82%AC">Same €, already escaped</a><br>
+</body>
+</html>
