@@ -1,7 +1,7 @@
 /*\
  * tidy-opts.c
  *
- * Copyright (c) 2015 - Geoff R. McLane
+ * Copyright (c) 2015-2017 - Geoff R. McLane
  * Licence: GNU GPL version 2
  *
 \*/
@@ -16,7 +16,7 @@
 /*\
  *
  * This module is to specifically test the tidyOptSaveSink() function
- * Is has no toher purpose
+ * Is has no other purpose
  *
 \*/
 
@@ -295,11 +295,11 @@ int show_sink()
         iret = tidyOptSaveSink(tdoc, &sink);
         if ( !cfgbuf.bp || (strlen((const char *)cfgbuf.bp) == 0) ) {
             const char *err1 = "Oops! All configuration items are equal default!" MEOL;
-            tidyBufAppend(&cfgbuf,(void *)err1,strlen(err1));
+            tidyBufAppend(&cfgbuf,(void *)err1,(uint)strlen(err1));
         }
     } else {
         const char *err2 = "Oops! internal error: tidyInitSink() FAILED" MEOL;
-        tidyBufAppend(&cfgbuf,(void *)err2,strlen(err2));
+        tidyBufAppend(&cfgbuf,(void *)err2,(uint)strlen(err2));
     }
     SPRTF("%s", cfgbuf.bp);
     return iret;
