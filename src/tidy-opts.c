@@ -278,12 +278,23 @@ static TidyOutputSink sink;
 
 void show_libVersion()
 {
+#ifdef USE_OLD_API  // did not have tidyLibraryVersion();
 #ifdef USE_TIDY5_API
     ctmbstr s = tidyLibraryVersion();
 #else    
     ctmbstr s = tidyReleaseDate();
 #endif    
     SPRTF("Using HTML Tidy library version %s\n", s);
+#else
+    ctmbstr v = tidyLibraryVersion();
+    ctmbstr d = tidyReleaseDate();
+#ifdef PLATFORM_NAME
+    SPRTF("Using HTML Tidy library for %s, date %s, version %s\n", PLATFORM_NAME, d, v);
+#else
+    SPRTF("Using HTML Tidy library date %s, version %s\n", d, v);
+#endif
+#endif
+
 }
 
 int show_sink()
