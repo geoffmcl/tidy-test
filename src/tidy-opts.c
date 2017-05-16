@@ -446,8 +446,14 @@ void free_stats()
     while (pmm->link) {
         void *vp = pmm->link;
         if (cnt) {
-            if (!pmm->freed)
-                SPRTF("%s: allocation %p (%p) NOT freed\n", module, pmm->mem, pmm->nmem);
+            if (!pmm->freed) {
+                if (pmm->nmem) {
+                    SPRTF("%s: allocation %p (%p) NOT freed\n", module, pmm->mem, pmm->nmem);
+                }
+                else {
+                    SPRTF("%s: NULL allocation %p NOT freed? size %d\n", module, pmm->mem, (int)pmm->size);
+                }
+            }
             free(pmm);
         }
         pmm = (PMMSTATS)vp;
