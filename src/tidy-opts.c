@@ -410,7 +410,7 @@ size_t free_block( void *vp )
                     return pmm->size;
                 }
             } else {
-                SPRTF("%s: block %p already marked free. Maybe reuse...\n", module, vp);
+                SPRTF("%s: block %p already marked free. Maybe reused...\n", module, vp);
             }
         } 
         pmm = (PMMSTATS) pmm->link;
