@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <tag><![CDATA[
+    Lorem Ipsum Dolor Sit Amet Lorem Ipsum Dolor Sit Amet Lorem Ipsum Dolor Sit Amet Lorem Ipsum Dolor Sit Amet Lorem Ipsum Dolor Sit Amet
+       ]]></tag>
+  <tag>
+  <![CDATA[
+    Hello from CDATA
+  ]]>
+  </tag>
+</root>
