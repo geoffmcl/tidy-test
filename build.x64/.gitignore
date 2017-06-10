@@ -14,3 +14,5 @@ ipch/*
 *.sdf
 *.suo
 *.VC.db
+*.VC.VC.opendb
+run-*.bat
