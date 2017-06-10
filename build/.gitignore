@@ -33,4 +33,8 @@ tidylibs.txt
 tidy-locale
 tidy-test-prev
 tidy-buf-test
-
+TODO.txt
+cmp-tidy.bat
+run-u2t.bat
+upd-s2t.bat
+vos.htm
