@@ -208,6 +208,8 @@ DiskType is_file_or_directory( const char * path )
 }
 size_t get_last_file_size() { return buf.st_size; }
 ///////////////////////////////////////////////////////////
+
+#ifdef ADD_ISSUE_457
 // Code from Issue #457
 static int node_count = 0;
 void IterateNode(TidyDoc doc, TidyNode tnod)
@@ -247,7 +249,7 @@ void IterateNode(TidyDoc doc, TidyNode tnod)
 		IterateNode(doc, child); /* recursive */
 	}
 }
-
+#endif // #ifdef ADD_ISSUE_457
 ///////////////////////////////////////////////////////////////////////
 
 int show_tidy_nodes()
@@ -286,9 +288,11 @@ int show_tidy_nodes()
 
     dumpDoc(tdoc);
 
+#ifdef ADD_ISSUE_457
 	SPRTF("Issue #457 - Ignoring close elements\n");
 	IterateNode(tdoc, tidyGetRoot(tdoc));
 	SPRTF("End of testing - done %d nodes...\n", node_count);
+#endif // ADD_ISSUE_457
 
     tidyRelease( tdoc ); /* called to free hash tables etc. */
     iret = ((status < 0) && (status > 1)) ? 1 : 0;
