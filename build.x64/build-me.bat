@@ -5,7 +5,7 @@
 @echo Setup for 64-bit %TMPROJ% build
 @set TMPLOG=bldlog-1.txt
 @set TMPSRC=..
-@set TMP3RD=F:\Projects\software
+@set TMP3RD=F:\Projects\software.x64
 @set ADDINST=0
 @REM set BOOST_ROOT=X:\install\msvc%VCVERS%0-64\boost
 @REM if NOT EXIST %BOOST_ROOT%\nul goto NOBOOST
