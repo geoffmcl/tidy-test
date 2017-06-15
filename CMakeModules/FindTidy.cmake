@@ -32,7 +32,7 @@ if (_TIDY_SEARCHES)
           find_path(TIDY_INCLUDE_DIR
             NAMES tidy.h
             PATHS ${search}
-            PATH_SUFFIXES include
+            PATH_SUFFIXES include/tidy include
             )
           # search for the STATIC version first
           find_library(TIDY_LIBRARY_DBG
@@ -73,7 +73,7 @@ if (_TIDY_SEARCHES)
           find_path(TIDY_INCLUDE_DIR
             NAMES tidy.h
             PATHS ${search}
-            PATH_SUFFIXES include
+            PATH_SUFFIXES include/tidy include
             )
           find_library(TIDY_LIBRARY
             NAMES ${TIDY_NAMES}
@@ -87,7 +87,7 @@ else ()
     message(STATUS "+++ Default search with no search paths")
     find_path(TIDY_INCLUDE_DIR
         NAMES tidy.h
-        PATH_SUFFIXES include
+        PATH_SUFFIXES include/tidy include
     )
     find_library(TIDY_LIBRARY
         NAMES ${TIDY_NAMES}
