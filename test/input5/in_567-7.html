@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="de-CH">
+<head>
+  <meta charset="UTF-8"/>
+  <title>567-7 - style in section tag</title>
+</head>
+<body>
+<div id="layout">
+  <div id="position">
+<article>
+  <h1>Style Scoped</h1>
+  <p>black: allows include style elements mid-document.</p>
+  <section>
+    <style scoped>
+      p { color: red; }
+    </style>
+    <h2>How does it work?</h2>
+    <p>red: This should be red.</p>
+  </section>
+</article>
+  </div>  
+</div>
+<p>black: This should be black</p>
+</body>
+</html>

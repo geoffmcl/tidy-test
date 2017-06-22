@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="de-CH">
+<head>
+  <meta charset="UTF-8"/>
+  <title>567-5 - style in tr tag</title>
+</head>
+<body>
+<div id="layout">
+  <div id="position">
+    <table>
+     <tr>
+       <style type="text/css" scoped>
+         p { color: red; }
+       </style>
+      <td>
+       <p>Should be red</p>
+      </td>
+     </tr>
+     <tr>
+       <style type="text/css" scoped>
+         p { color: green; }
+       </style>
+      <td>
+       <p>Should be green</p>
+      </td>
+     </tr>
+    </table>
+  </div>  
+</div>
+</body>
+</html>
