@@ -28,17 +28,36 @@ static TidyDoc tdoc = 0;
 static TidyBuffer txtbuf;
 static size_t total_txt = 0;
 static int txt_nodes = 0;
+
+void show_version()
+{
+    ctmbstr prd = tidyReleaseDate();
+    ctmbstr plv = tidyLibraryVersion();
+#ifdef  PLATFORM_NAME
+    SPRTF("%s: Using library HTML Tidy for %s, circa %s, version %s\n", module,
+        PLATFORM_NAME, prd, plv);
+#else
+    SPRTF("%s: Using library HTML Tidy, circa %s, version %s\n", module,
+        prd, plv);
+#endif
+
+}
+
 void give_help( char *name )
 {
-    SPRTF("%s: usage: [options] usr_input\n", module);
+    show_version();
+    SPRTF("Usage:\n");
+    SPRTF("%s [options] usr_input\n", module);
     SPRTF("Options:\n");
-    SPRTF(" --help  (-h or -?) = This help and exit(2)\n");
+    SPRTF(" --help  (-h or -?) = This help and exit(0)\n");
     // TODO: More help
 }
 
 void dumpNode( TidyNode tnod, int indent, int *pcnt )
 {
     TidyNode child;
+    TidyAttr tattr;
+    uint len;
     for ( child = tidyGetChild(tnod); child; child = tidyGetNext(child) )
     {
         ctmbstr name = NULL;
@@ -99,10 +118,32 @@ void dumpNode( TidyNode tnod, int indent, int *pcnt )
             exit(1);
         }
         SPRTF( "%*.*sNode:%d: %s ", indent, indent, " ", *pcnt, name );
+        // dump attributes of node
+        for (tattr = tidyAttrFirst(child); tattr; tattr = tidyAttrNext(tattr)) {
+            ctmbstr anam = tidyAttrName(tattr);
+            ctmbstr aval = tidyAttrValue(tattr);
+            if (aval)
+                SPRTF("%s=\"%s\" ", anam, aval);
+            else
+                SPRTF("%s ", anam);
+        }
         if (txtbuf.bp && txtbuf.size) {
-            total_txt += txtbuf.size;
+            total_txt += txtbuf.size;   // NOTE: This size may inclue trailing spaces chars...
             SPRTF("(%d) ", txtbuf.size);
             txt_nodes++;
+            // trim end of buffer
+            len = txtbuf.size;
+            while (len--) {
+                if (txtbuf.bp[len] > ' ')
+                    break;
+                txtbuf.bp[len] = 0;
+                txtbuf.size--;
+            }
+            if (txtbuf.size) {
+                // zero terminate the buffer
+                tidyBufAppend(&txtbuf, "\0", 1);
+                SPRTF("%s", txtbuf.bp);
+            }
 
         }
         SPRTF("\n");
@@ -128,7 +169,7 @@ void dumpDoc( TidyDoc doc )
     countNodes( node, &count );
     SPRTF("Dump of %d nodes...\n", count );
     count = 0;
-    tidyBufInit( &txtbuf );
+    tidyBufInit( &txtbuf ); // inti TEXT BUFFER - to use for TEXT
     dumpNode( node, 0, &count );
     SPRTF("Found %ld text bytes on %d nodes...\n", total_txt, txt_nodes );
 }
@@ -302,9 +343,10 @@ int show_tidy_nodes()
 void test_no_doc()
 {
     TidyDoc td = 0;
-	ctmbstr vers = tidyLibraryVersion();
-	ctmbstr date = tidyReleaseDate();
-	SPRTF("Testing 'libtidy' version %s (%s)\n", vers, date);
+	// ctmbstr vers = tidyLibraryVersion();
+	// ctmbstr date = tidyReleaseDate();
+	// SPRTF("Testing 'libtidy' version %s (%s)\n", vers, date);
+    show_version();
     td = tidyCreate();
     int status = tidyCleanAndRepair( td );
     tidyRelease( td ); /* called to free hash tables etc. */
@@ -315,13 +357,14 @@ int main( int argc, char **argv )
 {
     int iret = 0;
     set_log_file((char *)def_log, 0);
-    test_no_doc();
     iret = parse_args(argc,argv);
     if (iret) {
         if (iret == 2)
             iret = 0;
         return iret;
     }
+
+    test_no_doc();
 
     iret = show_tidy_nodes();    // actions of app
 
