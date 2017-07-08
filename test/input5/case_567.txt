@@ -1,0 +1,33 @@
+Issue #567 - https://github.com/htacg/tidy-html5/issues/567
+Tidy does not move <style>-Tag to head #567
+18:04 2017-06-02 - suchafreak commented 7 hours ago • edited
+
+Samples:
+
+in_567.html
+HTML5: Original, with a <style> tag in root of <body>
+
+in_567-1.html
+HTML4: 4.01 Transitional - Same as the above
+
+in_567-2.html
+HTML5: 'scoped' example, style in a div - supported by firefox,...
+but not much else...
+
+in_567-3.html
+HTML5: 'scoped' example - similar to the above, with 2 scoped colors, red, green
+
+in_567-4.html
+HTML5: Style in body root, and body -> div -> div
+
+in_567-5.html
+HTML5: style in table -> tr tag, already moved by tidy to before table
+
+in_567-6.html
+HTML5: style in table -> tr -> td tag, already moved by tidy to the head
+
+in_567-7.html
+HTML5: style scoped in body->div->div->article->section...
+Currently FAILS!!!
+
+; eof
