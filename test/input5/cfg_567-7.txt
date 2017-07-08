@@ -1,0 +1,13 @@
+// Issue #567
+drop-empty-elements: false
+drop-empty-paras: false
+fix-uri: false
+fix-backslash: false
+join-styles: false
+output-html: true
+output-xhtml: true
+output-xml: false
+quiet: true
+tidy-mark: false
+wrap-php: false
+wrap-script-literals: false
