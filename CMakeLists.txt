@@ -299,6 +299,21 @@ if (MSVC)
     set_target_properties( ${name} PROPERTIES DEBUG_POSTFIX d )
 endif ()
 
+### utiltity/tool to convert leading tabs in a file to spaces
+### is more or less a duplicate of the tab2space console tool in tidy source
+set(name tab2spaces)
+set(dir src/tools)
+set(${name}_SRCS
+    ${dir}/${name}.c
+    )
+add_executable( ${name} ${${name}_SRCS} )
+if (add_LIBS)
+    target_link_libraries( ${name} ${add_LIBS} )
+endif ()
+if (MSVC)
+    set_target_properties( ${name} PROPERTIES DEBUG_POSTFIX d )
+endif ()
+
 ################################################################
 ### build the sample code
 set(name sample)
