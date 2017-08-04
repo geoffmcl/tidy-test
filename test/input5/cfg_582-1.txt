@@ -1,0 +1,4 @@
+vertical-space: yes
+show-body-only: yes
+show-info: no
+indent: auto
