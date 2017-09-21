@@ -6,7 +6,7 @@
 @if NOT EXIST %TMPPY% goto NOSCR
 @python2 --version
 @if ERRORLEVEL 1 goto NOPY
-
+:ISOK
 
 python2 %TMPPY% %TMPFIL%
 
@@ -22,6 +22,10 @@ python2 %TMPPY% %TMPFIL%
 @echo.
 @echo Error: Can NOT run 'python2 --version'! Has python been setup? Maybe need setuppython.bat first...
 @echo.
+call setuppython
+@python2 --version
+@if ERRORLEVEL 0 goto ISOK
+@echo Setup failed...
 @goto END
 
 :NOFILE
