@@ -443,6 +443,7 @@ void free_stats()
 {
     PMMSTATS pmm = &mmstats;
     int cnt = 0;
+    int failed = 0;
     while (pmm->link) {
         void *vp = pmm->link;
         if (cnt) {
@@ -453,14 +454,15 @@ void free_stats()
                 else {
                     SPRTF("%s: NULL allocation %p NOT freed? size %d\n", module, pmm->mem, (int)pmm->size);
                 }
+                failed++;
             }
             free(pmm);
         }
         pmm = (PMMSTATS)vp;
         cnt++;
     }
-    SPRTF("%s: %d allocations, total mem %d, max mem %d, largest %d\n", module, cnt, (int)total_mem, (int)max_max_mem,
-        (int)largest_mem);
+    SPRTF("%s: %d allocations, total mem %d, max mem %d, largest %d, failed %d\n", module, cnt, (int)total_mem, (int)max_max_mem,
+        (int)largest_mem, failed);
 }
 
 /////////////////////////////////////////////////////////////////////////
@@ -485,6 +487,7 @@ void * TIDY_CALL MyAllocator_alloc(TidyAllocator *base, size_t nBytes)
     add_to_stats( vp, nBytes, no, 0 );
     return vp;
 }
+//void * MyAllocator_realloc(TidyAllocator *base, void *block, size_t nBytes)
 void * TIDY_CALL MyAllocator_realloc(TidyAllocator *base, void *block, size_t nBytes)
 {
     MyAllocator *self = (MyAllocator*)base;
@@ -502,6 +505,7 @@ void * TIDY_CALL MyAllocator_realloc(TidyAllocator *base, void *block, size_t nB
     }
     return vp;
 }
+//void MyAllocator_free(TidyAllocator *base, void *block)
 void TIDY_CALL MyAllocator_free(TidyAllocator *base, void *block)
 {
     MyAllocator *self = (MyAllocator*)base;
@@ -513,6 +517,7 @@ void TIDY_CALL MyAllocator_free(TidyAllocator *base, void *block)
     }
     free(block);
 }
+//void MyAllocator_panic(TidyAllocator *base, ctmbstr msg)
 void TIDY_CALL MyAllocator_panic(TidyAllocator *base, ctmbstr msg)
 {
     SPRTF("Critical Error: %s\n", msg);
@@ -540,8 +545,9 @@ void test_with_allocator()
     Bool done;
     int res, c;
     size_t ii,len;
+    tmbstr locale = NULL;
 
-    SPRTF("%s: Test 2: Set own allocator\n", module );
+    SPRTF("\n%s: Test 2: Set own allocator\n", module );
     memset(&allocator,0,sizeof(MyAllocator));
     allocator.base.vtbl = &MyAllocatorVtbl;
     //...initialise allocator specific state...
@@ -551,6 +557,27 @@ void test_with_allocator()
         SPRTF("Failed tidyCreateWithAllocator!\n");
         goto exit;
     }
+    /////////////////////////////////////////////////////////////
+    // 20171029 - Seems MUST also set these... but get a BIG PROBLEM
+#if 0 // 000000000000000000000000000000000000000000000000000
+    tidySetMallocCall(&MyAllocator_alloc);
+    tidySetReallocCall(&MyAllocator_realloc);
+    tidySetFreeCall(&MyAllocator_free);
+    tidySetPanicCall(&MyAllocator_panic);
+#endif // 000000000000000000000000000000000000000000000000000
+    // 20171029 - add something that 'tidy.c' does
+    /*************************************/
+    /* Set the locale for tidy's output. */
+    /*************************************/
+    SPRTF("%s: tidySystemLocale(locale)...\n", module);
+    locale = tidySystemLocale(locale);
+    tidySetLanguage(locale);
+    if (locale) {
+        SPRTF("%s: Free the tidySystemLocale(locale) allocation...\n", module);
+        free(locale);
+    }
+    /////////////////////////////////////////////////////////////
+
     SPRTF("%s: Allocate two buffers, err and out buffer...\n", module);
     tidyBufInitWithAllocator( &m_errbuf, &allocator.base);  // tidyBufInit( &m_errbuf );
     tidyBufInitWithAllocator( &m_outbuf, &allocator.base);  // tidyBufInit( &m_errbuf );
