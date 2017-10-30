@@ -16,7 +16,8 @@
 static const char* input = 0;
 static ctmbstr errfil = NULL;
 static FILE *errout = NULL;
-
+static const char *outfile = 0;
+static const char *msgfile = 0;
 /**
 **  Handles the -version service.
 */
@@ -35,7 +36,11 @@ static void give_help(char *name)
     SPRTF(" --help   (-h or -?) = This help and exit(0)\n");
     SPRTF(" --version      (-v) = Show library version, and exit(0)\n");
     SPRTF(" --<option> <value>  = Will be treated as a libTidy option and value\n");
+    SPRTF(" --lang <locale>     = This special option set the language tidy will\n");
+    SPRTF("                       use for messages. '--lang help' will show the list.\n");
     SPRTF(" -config <file> (-c) = Pass a config file to libTidy\n");
+    SPRTF(" -out <file>    (-o) = Write tidy HTML to this file.\n");
+    SPRTF(" -msg <file>    (-m) = Write tidy messages to this file.\n");
 }
 /**
 **  Indicates whether or not two filenames are the same.
@@ -103,6 +108,72 @@ int ProcessDefConfig(TidyDoc tdoc)
     return 0;
 }
 
+/////////////////////////////////////////////////////////////////////////////////
+// 20171030 - additions
+/** Prints the Windows language names that Tidy recognizes, using the specified
+** format string.
+** @param format A format string used to display the Windows language names,
+**        or NULL to use the built-in default format.
+*/
+void tidyPrintWindowsLanguageNames(ctmbstr format)
+{
+    const tidyLocaleMapItem *item;
+    TidyIterator i = getWindowsLanguageList();
+    ctmbstr winName;
+    ctmbstr posixName;
+
+    while (i) {
+        item = getNextWindowsLanguage(&i);
+        winName = TidyLangWindowsName(item);
+        posixName = TidyLangPosixName(item);
+        if (format)
+            SPRTF(format, winName, posixName);
+        else
+            SPRTF("%-20s -> %s\n", winName, posixName);
+    }
+}
+
+/** Prints the languages the are currently built into Tidy, using the specified
+** format string.
+** @param format A format string used to display the Windows language names,
+**        or NULL to use the built-in default format.
+*/
+void tidyPrintTidyLanguageNames(ctmbstr format)
+{
+    ctmbstr item;
+    TidyIterator i = getInstalledLanguageList();
+
+    while (i) {
+        item = getNextInstalledLanguage(&i);
+        if (format)
+            SPRTF(format, item);
+        else
+            SPRTF("%s\n", item);
+    }
+}
+
+
+/** Handles the -lang help service.
+** @remark We will not support console word wrapping for the tables. If users
+**         really have a small console, then they should make it wider or
+**         output to a file.
+** @param tdoc The Tidy document.
+*/
+static void lang_help(TidyDoc tdoc)
+{
+    SPRTF("\n");
+    SPRTF("%s", tidyLocalizedString(TC_TXT_HELP_LANG_1));
+    SPRTF("\n");
+    tidyPrintWindowsLanguageNames("  %-20s -> %s\n");
+    SPRTF("\n");
+    SPRTF("%s", tidyLocalizedString(TC_TXT_HELP_LANG_2));
+    SPRTF("\n");
+    tidyPrintTidyLanguageNames("  %s\n");
+    SPRTF("\n");
+    SPRTF(tidyLocalizedString(TC_TXT_HELP_LANG_3), tidyGetLanguage());
+    SPRTF("\n");
+}
+////////////////////////////////////////////////////////////////////////////
 
 static int ParseArgs(TidyDoc tdoc, int argc, char **argv)
 {
@@ -134,19 +205,41 @@ static int ParseArgs(TidyDoc tdoc, int argc, char **argv)
                     /* treat ALL other '--' as configuration arguments */
                     if (i2 < argc) {
                         i++;
-                        if (tidyOptParseValue(tdoc, sarg, argv[i])) {
-                            /* config value accepted */
-                            /* Set new error output stream if setting changed */
-                            post = tidyOptGetValue(tdoc, TidyErrFile);
-                            if (post && (!errfil || !samefile(errfil, post)))
+                        /* EXCEPT --language xx */
+                        if (strcmp(sarg, "language") == 0 ||
+                            strcmp(sarg, "lang") == 0) {
+                            if (strcmp(argv[i], "help") == 0) {
+                                lang_help(tdoc);
+                                return 2;
+                                // exit(0);
+                            }
+                            if (!tidySetLanguage(argv[i]))
                             {
-                                errfil = post;
-                                errout = tidySetErrorFile(tdoc, post);
+                                SPRTF(tidyLocalizedString(TC_STRING_LANG_NOT_FOUND),
+                                    argv[i], tidyGetLanguage());
+                                SPRTF("\n");
+                            }
+                            else {
+                                SPRTF(tidyLocalizedString(TC_TXT_HELP_LANG_3), tidyGetLanguage());
+                                SPRTF("\n");
                             }
                         }
                         else {
-                            SPRTF("Error: Configuration option '%s %s' failed!\n", arg, argv[i]);
-                            return 1;
+
+                            if (tidyOptParseValue(tdoc, sarg, argv[i])) {
+                                /* config value accepted */
+                                /* Set new error output stream if setting changed */
+                                post = tidyOptGetValue(tdoc, TidyErrFile);
+                                if (post && (!errfil || !samefile(errfil, post)))
+                                {
+                                    errfil = post;
+                                    errout = tidySetErrorFile(tdoc, post);
+                                }
+                            }
+                            else {
+                                SPRTF("Error: Configuration option '%s %s' failed!\n", arg, argv[i]);
+                                return 1;
+                            }
                         }
                     }
                     else {
@@ -191,6 +284,28 @@ static int ParseArgs(TidyDoc tdoc, int argc, char **argv)
                 case 'v':
                     version();
                     return 2;
+                case 'o':
+                    /* assume '-out <file> */
+                    if (i2 < argc) {
+                        i++;
+                        outfile = strdup(argv[i]);
+                    }
+                    else {
+                        SPRTF("Error: Expected html output file name after %s\n", arg);
+                        return 1;
+                    }
+                    break;
+                case 'm':
+                    /* assume '-msg <file> */
+                    if (i2 < argc) {
+                        i++;
+                        msgfile = strdup(argv[i]);
+                    }
+                    else {
+                        SPRTF("Error: Expected message output file name after %s\n", arg);
+                        return 1;
+                    }
+                    break;
                 default:
                     SPRTF("Error: Unknown option '%s'! Try -?\n", arg);
                     return 2;
@@ -257,10 +372,51 @@ int main(int argc, char **argv )
 
     SPRTF("Add information summary:(%u)\n", errbuf.size);
     tidyErrorSummary(tdoc);
-    SPRTF("Add general nformation:(%u)\n", errbuf.size);
+    SPRTF("Add general information:(%u)\n", errbuf.size);
     tidyGeneralInfo(tdoc);
-    SPRTF( "Diagnostics errors:(%u)\n\n%s", errbuf.size, errbuf.bp );
-    SPRTF( "\nAnd here are the result:(%u)\n\n%s", output.size, output.bp );
+    if (msgfile && errbuf.size) {
+        FILE *msg = fopen(msgfile, "w");
+        if (msg) {
+            size_t len = fwrite(errbuf.bp, 1, errbuf.size, msg);
+            fclose(msg);
+            if (len == errbuf.size) {
+                SPRTF("\nMessage results:(%u) written to %s\n", errbuf.size, msgfile);
+            }
+            else {
+                SPRTF("\nFailed to write messages:%u to %s!\n", errbuf.size, msgfile);
+                rc |= 1;
+            }
+        }
+        else {
+            SPRTF("\nFailed to create message:%u file %s!\n", errbuf.size, msgfile);
+            rc |= 1;
+        }
+
+    }
+    else {
+        SPRTF("Diagnostics errors:(%u)\n\n%s", errbuf.size, errbuf.bp);
+    }
+    if (outfile && output.size) {
+        FILE *out = fopen(outfile, "w");
+        if (out) {
+            size_t len = fwrite(output.bp, 1, output.size, out);
+            fclose(out);
+            if (len == output.size) {
+                SPRTF("\nResults results:(%u) written to %s\n", output.size, outfile);
+            }
+            else {
+                SPRTF("\nFailed to write results:%u to %s!\n", output.size, outfile);
+                rc |= 1;
+            }
+        }
+        else {
+            SPRTF("\nFailed to create results:%u file %s!\n", output.size, outfile);
+            rc |= 1;
+        }
+    }
+    else {
+        SPRTF("\nAnd here are the result:(%u)\n\n%s", output.size, output.bp);
+    }
 
 Exit:
     tidyBufFree( &output );
