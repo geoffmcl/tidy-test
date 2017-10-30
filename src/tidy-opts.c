@@ -439,6 +439,11 @@ size_t free_block( void *vp )
     return 0;
 }
 
+/*
+ * NOTE: This is far from perfect, since the OS can, and does reuse freed buffers,
+ * and there is no way to keep track of this exactly. So if a buffer shows up as
+ * unfreed, then carefully check if it is a reused address...
+ */
 void free_stats() 
 {
     PMMSTATS pmm = &mmstats;
@@ -449,10 +454,10 @@ void free_stats()
         if (cnt) {
             if (!pmm->freed) {
                 if (pmm->nmem) {
-                    SPRTF("%s: allocation %p (%p) NOT freed\n", module, pmm->mem, pmm->nmem);
+                    SPRTF("%s: re-alloc %p (%p) NOT freed! size %d\n", module, pmm->mem, pmm->nmem, (int)pmm->size);
                 }
                 else {
-                    SPRTF("%s: NULL allocation %p NOT freed? size %d\n", module, pmm->mem, (int)pmm->size);
+                    SPRTF("%s: allocation %p NOT freed? size %d\n", module, pmm->mem, (int)pmm->size);
                 }
                 failed++;
             }
@@ -461,7 +466,7 @@ void free_stats()
         pmm = (PMMSTATS)vp;
         cnt++;
     }
-    SPRTF("%s: %d allocations, total mem %d, max mem %d, largest %d, failed %d\n", module, cnt, (int)total_mem, (int)max_max_mem,
+    SPRTF("%s: %d allocs, total %d, max %d, largest %d, failed %d\n", module, cnt, (int)total_mem, (int)max_max_mem,
         (int)largest_mem, failed);
 }
 
@@ -473,55 +478,79 @@ typedef struct _MyAllocator {
     //   ...other custom allocator state...
 } MyAllocator;
  
+void *my_malloc(size_t nBytes)
+{
+    void *vp = malloc(nBytes);
+    if (!vp) {
+        SPRTF("my_malloc: Memory FAILED!\n");
+        exit(2);
+    }
+    SPRTF("    Allocate: %p, size %d\n", vp, (int)nBytes);
+    add_to_stats(vp, nBytes, no, 0);
+    return vp;
+}
 
-//void * MyAllocator_alloc(TidyAllocator *base, void *block, size_t nBytes)
+void *my_realloc(void *block, size_t nBytes)
+{
+    void *vp = realloc(block, nBytes);
+    if (!vp) {
+        SPRTF("my_realloc: Memory FAILED!\n");
+        exit(2);
+    }
+    if (block) {
+        SPRTF("    Reallocate: %p, from %p, size %d\n", vp, block, (int)nBytes);
+        add_to_stats(block, nBytes, yes, vp);
+    }
+    else {
+        SPRTF("[Re]allocate: %p, from NULL, size %d\n", vp, (int)nBytes);
+        add_to_stats(vp, nBytes, no, 0);
+    }
+    return vp;
+}
+
+void my_free(void *block)
+{
+    if (block) {
+        size_t size = free_block(block);
+        SPRTF("        Free: %p, size %d\n", block, (int)size);
+    }
+    else {
+        SPRTF("        Free: NULL\n");
+    }
+    free(block);
+}
+
+void my_panic(ctmbstr msg)
+{
+    SPRTF("Critical Error: %s\n", msg);
+    exit(2);
+}
+
 void * TIDY_CALL MyAllocator_alloc(TidyAllocator *base, size_t nBytes)
 {
     MyAllocator *self = (MyAllocator*)base;
     //   ...
-    void *vp = malloc(nBytes);
-    if (!vp) {
-        self->base.vtbl->panic(base,"Memory FAILED!");
-    }
-    SPRTF("    Allocate: %p, size %d\n", vp, (int)nBytes);
-    add_to_stats( vp, nBytes, no, 0 );
+    void *vp = my_malloc(nBytes);
     return vp;
 }
-//void * MyAllocator_realloc(TidyAllocator *base, void *block, size_t nBytes)
+
 void * TIDY_CALL MyAllocator_realloc(TidyAllocator *base, void *block, size_t nBytes)
 {
     MyAllocator *self = (MyAllocator*)base;
     //   ...
-    void *vp = realloc(block,nBytes);
-    if (!vp) {
-        self->base.vtbl->panic(base,"Memory FAILED!");
-    }
-    if (block) {
-        SPRTF("    Reallocate: %p, from %p, size %d\n", vp, block, (int)nBytes);
-        add_to_stats( block, nBytes, yes, vp );
-    } else {
-        SPRTF("[Re]allocate: %p, from NULL, size %d\n", vp, (int)nBytes);
-        add_to_stats( vp, nBytes, no, 0 );
-    }
+    void *vp = my_realloc(block, nBytes);
     return vp;
 }
-//void MyAllocator_free(TidyAllocator *base, void *block)
+
 void TIDY_CALL MyAllocator_free(TidyAllocator *base, void *block)
 {
     MyAllocator *self = (MyAllocator*)base;
-    if (block) {
-        size_t size = free_block( block );
-        SPRTF("        Free: %p, size %d\n", block, (int)size );
-    } else {
-        SPRTF("        Free: NULL\n" );
-    }
-    free(block);
+    my_free(block);
 }
-//void MyAllocator_panic(TidyAllocator *base, ctmbstr msg)
+
 void TIDY_CALL MyAllocator_panic(TidyAllocator *base, ctmbstr msg)
 {
-    SPRTF("Critical Error: %s\n", msg);
-    exit(2);
+    my_panic(msg);
 }
 
 static const TidyAllocatorVtbl MyAllocatorVtbl = {
@@ -557,14 +586,14 @@ void test_with_allocator()
         SPRTF("Failed tidyCreateWithAllocator!\n");
         goto exit;
     }
+
     /////////////////////////////////////////////////////////////
-    // 20171029 - Seems MUST also set these... but get a BIG PROBLEM
-#if 0 // 000000000000000000000000000000000000000000000000000
-    tidySetMallocCall(&MyAllocator_alloc);
-    tidySetReallocCall(&MyAllocator_realloc);
-    tidySetFreeCall(&MyAllocator_free);
-    tidySetPanicCall(&MyAllocator_panic);
-#endif // 000000000000000000000000000000000000000000000000000
+    // 20171029 - Seems MUST also set these...
+    tidySetMallocCall(&my_malloc);
+    tidySetReallocCall(&my_realloc);
+    tidySetFreeCall(&my_free);
+    tidySetPanicCall(&my_panic);
+
     // 20171029 - add something that 'tidy.c' does
     /*************************************/
     /* Set the locale for tidy's output. */
@@ -700,7 +729,7 @@ exit:
     tidyBufFree( &m_errbuf );
     tidyBufFree( &m_outbuf );
     tidyRelease(doc);
-    free_stats();
+    free_stats(); // remove all stats
     SPRTF("%s: Test 2: Done.\n", module );
 
 }
@@ -741,6 +770,7 @@ int main( int argc, char **argv )
         }
     }
     SPRTF("%s: Test 1: Done\n", module);
+    closeTidyLib(); // close current 'tdoc' before doing next test - important
     test_with_allocator();
 exit:
     closeTidyLib();
