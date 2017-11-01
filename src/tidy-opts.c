@@ -594,6 +594,7 @@ void test_with_allocator()
     tidySetFreeCall(&my_free);
     tidySetPanicCall(&my_panic);
 
+#ifdef TIDY_5_5_75  // earlier API, removed after this version
     // 20171029 - add something that 'tidy.c' does
     /*************************************/
     /* Set the locale for tidy's output. */
@@ -606,6 +607,7 @@ void test_with_allocator()
         free(locale);
     }
     /////////////////////////////////////////////////////////////
+#endif // previous tidy version
 
     SPRTF("%s: Allocate two buffers, err and out buffer...\n", module);
     tidyBufInitWithAllocator( &m_errbuf, &allocator.base);  // tidyBufInit( &m_errbuf );
