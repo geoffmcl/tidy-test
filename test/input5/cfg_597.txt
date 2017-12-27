@@ -1,0 +1,2 @@
+drop-empty-elements: no
+show-body-only: yes

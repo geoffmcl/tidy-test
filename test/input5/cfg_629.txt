@@ -1,0 +1,5 @@
+# Sample config for PR_629.
+squelch-id: yes
+squelch: FAKE_TAG, 
+  MISSING_ENDTAG_OPTIONAL,
+  MISSING_ENDTAG_FOR,
