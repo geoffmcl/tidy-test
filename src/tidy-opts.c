@@ -589,10 +589,10 @@ void test_with_allocator()
 
     /////////////////////////////////////////////////////////////
     // 20171029 - Seems MUST also set these...
-    tidySetMallocCall(&my_malloc);
-    tidySetReallocCall(&my_realloc);
-    tidySetFreeCall(&my_free);
-    tidySetPanicCall(&my_panic);
+    tidySetMallocCall((TidyMalloc)&my_malloc);
+    tidySetReallocCall((TidyRealloc)&my_realloc);
+    tidySetFreeCall((TidyFree)&my_free);
+    tidySetPanicCall((TidyPanic)&my_panic);
 
 #ifdef TIDY_5_5_75  // earlier API, removed after this version
     // 20171029 - add something that 'tidy.c' does
