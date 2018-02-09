@@ -1,0 +1,226 @@
+/* tidy.css for GeoffAir/tidy - 2007.08.18 */
+
+body { 
+background-image : url('images/cldst.jpg');
+margin : 0 1cm 0 1cm;
+text-align : justify;
+} 
+
+h1 { 
+background : #efefef;
+border-style : solid solid solid solid;
+border-color : #d9e2e2;
+border-width : 1px;
+padding : 2px 2px 2px 2px;
+font-size : 300%;
+text-align : center;
+} 
+
+h2 { 
+font-size : 16pt;
+font-weight : bold;
+background-color : #ccccff;
+} 
+
+.sz4redb { 
+font-size : 18pt;
+color : #ff0000;
+font-family : Arial;
+font-weight : bold;
+} 
+
+.redb { 
+color : #ff0000;
+font-family : Arial;
+font-weight : bold;
+} 
+
+.cd, .code {
+  /* top, right, bottom, left */
+  padding: 0px 10px 0px 10px;
+  margin: 1px 10px 1px 10px;
+  background: #f0f8ff;
+  border-width: 1px;
+  border-style: solid solid solid solid;
+  border-color: #cccccc;
+  width: 90%;
+  font-family:"Courier New";
+}
+
+.a { color:red; }
+.b { color:#006666; }
+.c { color:blue; }
+.d { color:#a52a2a; }
+.e { color:#9400d3; }
+.f { color:#666666; }
+.g { color:#008000; }
+.o { color:#008b8b; }
+.v { color:#a52a2a; }
+.t { color:#006600; }
+
+.ctr { 
+text-align : center;
+} 
+
+.rit {
+text-align: right;
+}
+
+.cn { 
+font-family : "Courier New";
+} 
+
+.cnxsml { 
+font-family : "Courier New";
+font-size : x-small;
+} 
+
+tt { font-size : x-small }
+
+.bld { 
+font-weight : bold;
+} 
+
+.bldcn { 
+font-family : "Courier New";
+font-weight : bold;
+} 
+
+.just { 
+text-align : justify;
+} 
+
+.nob { 
+margin : 0 0 0 0;
+border-style : none;
+padding : 0 0 0 0;
+} 
+
+.nmb { 
+margin-bottom : 0;
+border-style : none;
+padding : 0;
+} 
+
+.nmt { 
+margin-top : 0;
+border-style : none;
+padding : 0;
+} 
+
+.nmtb { 
+margin-top : 0;
+margin-bottom : 0;
+border-style : none;
+padding : 0;
+} 
+
+
+hr.mini { 
+margin : 0;
+border-style : none;
+padding : 0;
+width : 20%;
+text-align : center;
+} 
+
+p.top { 
+margin : 0;
+border-style : none;
+padding : 0;
+text-align : center;
+}
+
+.dos {
+  /* top, right, bottom, left */
+  padding: 0px 2px 0px 2px;
+  margin: 1px 2px 1px 2px;
+  background: #3f3f6f;
+  color: #ffffff;
+  border-width: 1px;
+  border-style: solid solid solid solid;
+  border-color: #cccccc;
+  width: 90%;
+  font-family:"Courier New";
+}
+
+.dos2 {
+  background : #3f3f6f;
+  color : #ffffff;
+  font-family : "Courier New";
+  font-size : x-small;
+}
+
+.out {
+  margin-left: 10px;
+  margin-top: 0px;
+  margin-bottom: 0px;
+  background: #eeeedd;
+  color: #000000;
+  border-width: 1px;
+  border-style: solid solid solid solid;
+  border-color: #ccc;
+  width: 90%;
+  padding: 0px 10px 0px 10px;
+}
+
+
+.unx {
+  background : #20ffff;
+  color : #000000;
+  font-family : "Courier New";
+  font-size : x-small;
+}
+
+
+.hide { display: none; }
+
+div.txt, .txt {
+/*  background: rgb(220,204,255); */
+  background: rgb(230,214,255);
+  margin: 0px 10px 0px 10px;
+  padding: 0px 0px 0px 0px;
+  border-width: 1px;
+  border-style: solid solid solid solid;
+  border-color: #cccccc;
+  width: 90%;
+}
+
+.com {
+  background: rgb(60,255,60);
+  margin: 0px 10px 0px 10px;
+  padding: 0px 0px 0px 0px;
+  border-width: 1px;
+  border-style: solid solid solid solid;
+  border-color: #cccccc;
+  width: 90%;
+}
+
+
+p.txt2, li.txt2, div.txt2 {
+  font-size:12.0pt;
+  font-family:"Times New Roman";
+}
+
+p.back { text-align: right; font-style: italic }
+.yell { background-color: #FFFFAA; }
+.yellb { background-color: #FFFFAA; font-weight : bold; }
+b.yell { background-color: #FFFFAA; font-family: Arial; }
+
+.cds {
+  padding: 0px 10px 0px 10px;
+  margin: 1px 10px 1px 10px;
+  background: #f0f8ff;
+  border-width: 1px;
+  border-style: solid solid solid solid;
+  border-color: #cccccc;
+  width: 90%;
+  font-size : x_small;
+}
+
+.warn, .error { 
+background-color : #efefef;
+color : #000050;
+} 
+
+/* eof */
