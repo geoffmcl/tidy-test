@@ -427,4 +427,20 @@ if (MSVC)
 endif ()
 
 ################################################################
+if (WIN32)
+    # ONLY FOR WIN32 - generic load DLL
+    set( name load-dll )
+    set( dir src)
+    set(${name}_SRCS
+        ${dir}/${name}.cxx
+        )
+    add_executable( ${name} ${${name}_SRCS} )
+    if (add_LIBS)
+        target_link_libraries( ${name} ${add_LIBS} )
+    endif ()
+    if (MSVC)
+        set_target_properties( ${name} PROPERTIES DEBUG_POSTFIX d )
+    endif ()
+endif (WIN32)
+
 # eof
