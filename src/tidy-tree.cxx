@@ -141,7 +141,7 @@ void dumpNode( TidyNode tnod, int indent, int *pcnt )
             }
             if (txtbuf.size) {
                 // zero terminate the buffer
-                tidyBufAppend(&txtbuf, "\0", 1);
+                tidyBufAppend(&txtbuf, (void *)"\0", 1);
                 SPRTF("%s", txtbuf.bp);
             }
 
