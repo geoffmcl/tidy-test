@@ -346,9 +346,10 @@ int main( int argc, char **argv )
             iret = 0;
         return iret;
     }
-
+    UINT em = GetErrorMode();
+    SetErrorMode(em | SEM_FAILCRITICALERRORS);
     iret = load_dll(usr_input); // actions of app
-
+    SetErrorMode(em);
     return iret;
 }
 
