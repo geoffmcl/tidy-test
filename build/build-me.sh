@@ -11,6 +11,11 @@ for arg in $*; do
     TMPOPTS="$TMPOPTS $arg"
 done
 
+if [ -z "$TMPOPTS" ]; then
+    # if no command line option, at least build RELEASE
+    TMPOPTS="-DCMAKE_BUILD_TYPE=Release"
+fi
+
 if [ -f "$TMPLOG" ]; then
     rm -f $TMPLOG
 fi
