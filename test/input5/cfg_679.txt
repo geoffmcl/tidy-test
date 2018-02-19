@@ -1,0 +1,4 @@
+tidy-mark: no
+wrap: 0
+clean: yes
+indent: auto
