@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Is #683</title>
+<script>
+function myheader( txt, num ) {
+	alert(txt);
+}
+</script>
+</head>
+<body>
+<h1>Script element in a table</h1>
+<table>
+   <!-- Heading -->
+   <script> myheader('Checking tidy',3); </script>
+ <tr>
+ <td>Item 1</td>
+ </tr>
+</table>
+</body>
+</html>
