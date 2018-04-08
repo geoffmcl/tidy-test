@@ -1,57 +1,49 @@
-/*
- *  SPRTF - Log output utility
+/* sprtf.c
+ * SPRTF - Log output utility - part of the HTML Tidy project
  *
- *   Author: Geoff R. McLane <reports _at_ geoffair _dot_ info>
- *   License: GPL v2 (or later at your choice)
+ * Copyright (c) 1998-2017 Geoff R. McLane and HTACG
  *
- *   Revision 1.0.1  2012/11/06 13:01:25  geoff
- *   Revision 1.0.0  2012/10/17 00:00:00  geoff
- *
- *   This program is free software; you can redistribute it and/or
- *   modify it under the terms of the GNU General Public License as
- *   published by the Free Software Foundation; either version 2 of the
- *   License, or (at your option) any later version.
- *
- *   This program is distributed in the hope that it will be useful, but
- *   WITHOUT ANY WARRANTY; without even the implied warranty of
- *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- *   General Public License for more details.
- *
- *   You should have received a copy of the GNU General Public License
- *   along with this program; if not, write to the Free Software
- *   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, US
- *
+ * See tidy.h for the copyright notice.
  */
 
-// Module: sprtf.cxx
-// Debug log file output
-#include <stdio.h> // fopen()...
-#include <string.h> // strcpy
-#include <stdarg.h> // va_start, va_end, ...
 #ifdef _MSC_VER
-#include <WinSock2.h>
-#include <sys/timeb.h>
-#else /* !_MSC_VER */
-#include <sys/time.h> // gettimeoday(), struct timeval,...
-#endif /* _MSC_VER y/n */
-#include <time.h>
-#include <stdlib.h> // for exit() in unix
-#include "sprtf.h"
+#  pragma warning( disable : 4995 )
+#endif
+
+#include <stdio.h>  /* fopen()... */
+#include <string.h> /* strcpy */
+#include <stdarg.h> /* va_start, va_end, ... */
 
 #ifdef _MSC_VER
-#ifndef _CRT_SECURE_NO_DEPRECATE
-#define _CRT_SECURE_NO_DEPRECATE
-#endif // #ifndef _CRT_SECURE_NO_DEPRECATE
-#pragma warning( disable:4996 )
+#  include <WinSock2.h>
+#  include <sys/timeb.h>
+#  if (defined(UNICODE) || defined(_UNICODE))
+#    include <Strsafe.h>
+#  endif
+#else /* !_MSC_VER */
+#  include <sys/time.h> /* gettimeoday(), struct timeval,... */
+#endif /* _MSC_VER y/n */
+
+#include <time.h>
+#include <stdlib.h> /* for exit() in unix */
+#include "sprtf.h"
+
+#if defined(ENABLE_DEBUG_LOG) || defined(TIDY_TEST)
+
+#ifdef _MSC_VER
+#  ifndef _CRT_SECURE_NO_DEPRECATE
+#    define _CRT_SECURE_NO_DEPRECATE
+#  endif /* #ifndef _CRT_SECURE_NO_DEPRECATE */
+#  pragma warning( disable:4996 )
 #else
-#define strcmpi strcasecmp
+#  define strcmpi strcasecmp
 #endif 
 
 #ifndef MX_ONE_BUF
-#define MX_ONE_BUF 1024
+#  define MX_ONE_BUF 1024
 #endif
 #ifndef MX_BUFFERS
-#define MX_BUFFERS 1024
+#  define MX_BUFFERS 1024
 #endif
 
 static char _s_strbufs[MX_ONE_BUF * MX_BUFFERS];
@@ -66,11 +58,8 @@ char *GetNxtBuf()
 }
 
 #define  MXIO     512
-#ifdef _MSC_VER // use local log
-static char def_log[] = "tempex.txt";
-#else
-static char def_log[] = "ex.log";
-#endif
+
+static char def_log[] = "temptidy.txt"; /* use local log */
 static char logfile[264] = "\0";
 static FILE * outfile = NULL;
 static int addsystime = 0;
@@ -82,7 +71,7 @@ static int add2listview = 0;
 static int append_to_log = 0;
 
 #ifndef VFP
-#define VFP(a) ( a && ( a != (FILE *)-1 ) )
+#  define VFP(a) ( a && ( a != (FILE *)-1 ) )
 #endif
 
 int   add_list_out( int val )
@@ -131,7 +120,7 @@ int   add_append_log( int val )
 
 
 #ifdef _MSC_VER
-static const char *mode = "wb"; // in window sprtf looks after the line endings
+static const char *mode = "wb"; /* in window sprtf looks after the line endings */
 #else
 static const char *mode = "w";
 #endif
@@ -142,7 +131,7 @@ int   open_log_file( void )
       strcpy(logfile,def_log);
    if (append_to_log) {
 #ifdef _MSC_VER
-        mode = "ab"; // in window sprtf looks after the line endings
+        mode = "ab"; /* in window sprtf looks after the line endings */
 #else
         mode = "a";
 #endif
@@ -151,7 +140,7 @@ int   open_log_file( void )
    if( outfile == 0 ) {
       outfile = (FILE *)-1;
       sprtf("ERROR: Failed to open log file [%s] ...\n", logfile);
-      exit(1); /* failed */
+      /* exit(1); failed */
       return 0;   /* failed */
    }
    return 1; /* success */
@@ -169,7 +158,7 @@ char * get_log_file( void )
 {
    if (logfile[0] == 0)
       strcpy(logfile,def_log);
-   if (outfile == (FILE *)-1) // disable the log file
+   if (outfile == (FILE *)-1) /* disable the log file */
        return (char *)"none";
    return logfile;
 }
@@ -179,14 +168,14 @@ void   set_log_file( char * nf, int open )
    if (logfile[0] == 0)
       strcpy(logfile,def_log);
    if ( nf && *nf && strcmpi(nf,logfile) ) {
-      close_log_file(); // remove any previous
-      strcpy(logfile,nf); // set new name
-      if (strcmp(logfile,"none") == 0) { // if equal 'none'
-          outfile = (FILE *)-1; // disable the log file
+      close_log_file(); /* remove any previous */
+      strcpy(logfile,nf); /* set new name */
+      if (strcmp(logfile,"none") == 0) { /* if equal 'none' */
+          outfile = (FILE *)-1; /* disable the log file */
       } else if (open) {
-          open_log_file();  // and open it ... anything previous written is 'lost'
+          open_log_file();  /* and open it ... anything previous written is 'lost' */
       } else
-          outfile = 0; // else set 0 to open on first write
+          outfile = 0; /* else set 0 to open on first write */
    }
 }
 
@@ -205,7 +194,7 @@ int gettimeofday(struct timeval *tp, void *tzp)
     return 0;
 }
 
-#endif // _MSC_VER
+#endif /* _MSC_VER */
 
 void add_date_stg( char *ps, struct timeval *ptv )
 {
@@ -301,74 +290,67 @@ static void oi( char * psin )
       }
 
       if( addstdout ) {
-         fwrite( ps, 1, len, stdout );
+         fwrite( ps, 1, len, stderr );  /* 20170917 - Switch to using 'stderr' in place of 'stdout' */
       }
 #ifdef ADD_LISTVIEW
        if (add2listview) {
            LVInsertItem(ps);
        } 
-#endif // ADD_LISTVIEW
+#endif /* ADD_LISTVIEW */
 #ifdef ADD_SCREENOUT
        if (add2screen) {
-          Add_String(ps);    // add string to screen list
+          Add_String(ps);    /* add string to screen list */
        }
-#endif // #ifdef ADD_SCREENOUT
+#endif /* #ifdef ADD_SCREENOUT */
    }
 }
 
 #ifdef _MSC_VER
-// service to ensure line endings in windows only
-static void	prt( char * ps )
+/* service to ensure line endings in windows only */
+static void prt( char * ps )
 {
     static char _s_buf[1024];
-	char * pb = _s_buf;
-	size_t i, j, k;
-	char   c, d;
+    char * pb = _s_buf;
+    size_t i, j, k;
+    char   c, d;
     i = strlen(ps);
-	k = 0;
-	d = 0;
-	if(i) {
-		k = 0;
-		d = 0;
-		for( j = 0; j < i; j++ ) {
-			c = ps[j];
-			if( c == 0x0d ) {
-				if( (j+1) < i ) {
-					if( ps[j+1] != 0x0a ) {
-						pb[k++] = c;
-						c = 0x0a;
-					}
+    k = 0;
+    d = 0;
+    if(i) {
+        k = 0;
+        d = 0;
+        for( j = 0; j < i; j++ ) {
+            c = ps[j];
+            if( c == 0x0d ) {
+                if( (j+1) < i ) {
+                    if( ps[j+1] != 0x0a ) {
+                        pb[k++] = c;
+                        c = 0x0a;
+                    }
             } else {
-					pb[k++] = c;
-					c = 0x0a;
-				}
-			} else if( c == 0x0a ) {
-				if( d != 0x0d ) {
-					pb[k++] = 0x0d;
-				}
-			}
-			pb[k++] = c;
-			d = c;
-			if( k >= MXIO ) {
-				pb[k] = 0;
-				oi(pb);
-				k = 0;
-			}
-		}	// for length of string
-		if( k ) {
-			//if( ( gbCheckCrLf ) &&
-			//	( d != 0x0a ) ) {
-				// add Cr/Lf pair
-				//pb[k++] = 0x0d;
-				//pb[k++] = 0x0a;
-				//pb[k] = 0;
-			//}
-			pb[k] = 0;
-			oi( pb );
-		}
-	}
+                    pb[k++] = c;
+                    c = 0x0a;
+                }
+            } else if( c == 0x0a ) {
+                if( d != 0x0d ) {
+                    pb[k++] = 0x0d;
+                }
+            }
+            pb[k++] = c;
+            d = c;
+            if( k >= MXIO ) {
+                pb[k] = 0;
+                oi(pb);
+                k = 0;
+            }
+        }   /* for length of string */
+        if( k ) {
+            pb[k] = 0;
+            oi( pb );
+        }
+    }
 }
-#endif // #ifdef _MSC_VER
+#endif /* #ifdef _MSC_VER */
 
 int direct_out_it( char *cp )
 {
@@ -380,8 +362,8 @@ int direct_out_it( char *cp )
     return (int)strlen(cp);
 }
 
-// STDAPI StringCchVPrintf( OUT LPTSTR  pszDest,
-//   IN  size_t  cchDest, IN  LPCTSTR pszFormat, IN  va_list argList );
+/* STDAPI StringCchVPrintf( OUT LPTSTR  pszDest,
+ *   IN  size_t  cchDest, IN  LPCTSTR pszFormat, IN  va_list argList ); */
 int MCDECL sprtf( const char *pf, ... )
 {
    static char _s_sprtfbuf[M_MAX_SPRTF+4];
@@ -389,10 +371,10 @@ int MCDECL sprtf( const char *pf, ... )
    int   i;
    va_list arglist;
    va_start(arglist, pf);
-   i = vsprintf( pb, pf, arglist );
+   i = vsnprintf( pb, M_MAX_SPRTF, pf, arglist );
    va_end(arglist);
 #ifdef _MSC_VER
-   prt(pb); // ensure CR/LF
+   prt(pb); /* ensure CR/LF */
 #else
    oi(pb);
 #endif
@@ -400,22 +382,22 @@ int MCDECL sprtf( const char *pf, ... )
 }
 
 #ifdef UNICODE
-// WIDE VARIETY
+/* WIDE VARIETY */
 static void wprt( PTSTR ps )
 {
    static char _s_woibuf[1024];
    char * cp = _s_woibuf;
    int len = (int)lstrlen(ps);
    if(len) {
-      int ret = WideCharToMultiByte( CP_ACP, // UINT CodePage,            // code page
-         0, // DWORD dwFlags,            // performance and mapping flags
-         ps,   // LPCWSTR lpWideCharStr,    // wide-character string
-         len,     // int cchWideChar,          // number of chars in string.
-         cp,      // LPSTR lpMultiByteStr,     // buffer for new string
-         1024,    // int cbMultiByte,          // size of buffer
-         NULL,    // LPCSTR lpDefaultChar,     // default for unmappable chars
-         NULL );  // LPBOOL lpUsedDefaultChar  // set when default char used
-      //oi(cp);
+      int ret = WideCharToMultiByte( CP_ACP, /* UINT CodePage, // code page */
+         0, /* DWORD dwFlags,            // performance and mapping flags */
+         ps,   /* LPCWSTR lpWideCharStr,    // wide-character string */
+         len,     /* int cchWideChar,          // number of chars in string. */
+         cp,      /* LPSTR lpMultiByteStr,     // buffer for new string */
+         1024,    /* int cbMultiByte,          // size of buffer */
+         NULL,    /* LPCSTR lpDefaultChar,     // default for unmappable chars */
+         NULL );  /* LPBOOL lpUsedDefaultChar  // set when default char used */
+      /* oi(cp); */
       prt(cp);
    }
 }
@@ -429,12 +411,12 @@ int MCDECL wsprtf( PTSTR pf, ... )
    va_start(arglist, pf);
    *pb = 0;
    StringCchVPrintf(pb,1024,pf,arglist);
-   //i = vswprintf( pb, pf, arglist );
    va_end(arglist);
    wprt(pb);
    return i;
 }
 
-#endif // #ifdef UNICODE
+#endif /* #ifdef UNICODE */
 
-// eof - sprtf.cxx
+#endif /* #ifdef ENABLE_DEBUG_LOG */
+/* eof - sprtf.c */
