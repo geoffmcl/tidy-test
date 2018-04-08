@@ -97,8 +97,6 @@ if (CURL_STATICLIB)
     endif ()
 endif ()
 
-add_definitions( -DTIDY_TEST )
-
 # configuration file, if needed
 # configure_file( ${CMAKE_SOURCE_DIR}/config.h.cmake ${CMAKE_BINARY_DIR}/config.h )
 # add_definitions( -DHAVE_CONFIG_H )
