@@ -8,12 +8,15 @@ set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/CMakeModules ${CMAKE_MODULE_PATH})
 project( tidy-test )
 
 # The version number.
-set( tidy-test_MAJOR 5 )
-set( tidy-test_MINOR 0 )
-set( tidy-test_POINT 0 )
+set( TT_MAJOR 5 )
+set( TT_MINOR 7 )
+set( TT_POINT 3 )
 
 # Option to test libtidy-0.99, libtidy-5.0.0, ... compatibility - should FAIL with 5.5.5 onwards
 option( USE_TIDY5_API "Set ON to test backward compatibility to libtidy-0.99, 5.0.0, onwards." OFF )
+
+add_definitions( -DTIDY_TEST )
+add_definitions( -DTT_VERSION="${TT_MAJOR}.${TT_MINOR}.${TT_POINT}" )
 
 if(CMAKE_COMPILER_IS_GNUCXX)
     set( WARNING_FLAGS -Wall )
@@ -94,8 +97,6 @@ if (CURL_STATICLIB)
     endif ()
 endif ()
 
-add_definitions( -DTIDY_TEST )
-
 # configuration file, if needed
 # configure_file( ${CMAKE_SOURCE_DIR}/config.h.cmake ${CMAKE_BINARY_DIR}/config.h )
 # add_definitions( -DHAVE_CONFIG_H )
@@ -140,7 +141,6 @@ list(APPEND add_LIBS ${name})
 ##### EXECUTABLE 1 #####
 #################################################
 
-if (USE_TIDY5_API)
 # tidy EXECUTABLE from [src],
 # have 1 C/C++ sources, 0 headers
 set(name tidy-test)
@@ -148,10 +148,7 @@ set(dir src)
 set(${name}_SRCS
     ${dir}/tidy.c
     )
-set(${name}_HDRS
-    ${dir}/language.h
-    )
-add_executable( ${name} ${${name}_SRCS} ${${name}_HDRS} )
+add_executable( ${name} ${${name}_SRCS} )
 if (add_LIBS)
     target_link_libraries( ${name} ${add_LIBS} )
 endif ()
@@ -161,6 +158,7 @@ endif ()
 # deal with install, if any...
 #install( TARGETS ${name} DESTINATION bin )
 
+if (USE_TIDY5_API)
 set(name tidy-test-prev)
 set(dir src)
 set(${name}_SRCS

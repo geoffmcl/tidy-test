@@ -15,4 +15,6 @@ tidy-json
 tidy-test-prev
 tidy-locale
 tidy-buf-test
+tab2spaces
+sample2
 
