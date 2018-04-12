@@ -54,7 +54,7 @@ typedef std::vector<ELIST> vELIST;
 
 #ifndef TIDY_TEST_ROOT
 #ifdef WIN32
-#define TIDY_TEST_ROOT "F:\\Projects\\tidy-html5\\test"
+#define TIDY_TEST_ROOT "F:\\Projects\\tidy-test\\test"
 #else
 #define TIDY_TEST_ROOT "/home/geoff/projects/html_tidy/tidy-html5/test"
 #endif
@@ -103,6 +103,26 @@ int addException( std::string &test, int ec = -1, std::string html = "", std::st
 void give_help( char *name );
 int parse_args( int argc, char **argv );
 /////////////////////////////////////////////////////////////////////////
+static void show_lib_version()
+{
+    ctmbstr prd = tidyReleaseDate();
+    ctmbstr plv = tidyLibraryVersion();
+#ifdef  PLATFORM_NAME
+    SPRTF("%s: Using library HTML Tidy for %s, circa %s, version %s\n", module,
+        PLATFORM_NAME, prd, plv);
+#else
+    SPRTF("%s: Using library HTML Tidy, circa %s, version %s\n", module,
+        prd, plv);
+#endif
+
+}
+
+static void show_version()
+{
+    SPRTF("%s version %s, circa %s\n", module, TT_VERSION, TT_DATE);
+    show_lib_version();
+}
+
 
 static void reset_input_to_root()
 {
@@ -568,7 +588,7 @@ int load_tidy_file2(const char *file, TidyBuffer *pinput)
     std::ostringstream oss;
     oss << ifs.rdbuf();
     const std::string file_str = oss.str();    // get a string
-    tidyBufAppend( pinput, (void *)file_str.c_str(), file_str.size() );
+    tidyBufAppend( pinput, (void *)file_str.c_str(), (uint)file_str.size() );
     return 0;
 }
 
@@ -1402,6 +1422,9 @@ int parse_args( int argc, char **argv )
                     return 1;
                 }
                 break;
+            case 'v':
+                show_version();
+                return 2;
 
             // TODO: Other arguments
             default:
@@ -1433,9 +1456,11 @@ int parse_args( int argc, char **argv )
 
 void give_help( char *name )
 {
+    show_version();
     SPRTF("%s: usage: [options] usr_input\n", module);
     SPRTF("Options:\n");
-    SPRTF(" --help      (-h or -?) = This help and exit(2)\n");
+    SPRTF(" --help      (-h or -?) = This help and exit(0)\n");
+    SPRTF(" --version         (-v) = Show version and exit(0)\n");
     SPRTF(" --root <path>     (-r) = Set the root path to the Tidy test suite.\n");
     SPRTF(" --list <file>     (-l) = Set the input list file.\n");
     SPRTF(" --input <path>    (-i) = Set the root path to the Tidy test input files.\n");
@@ -1451,7 +1476,15 @@ void give_help( char *name )
     SPRTF(" --testbase %s %s\n", testbase, ISDIR(testbase) );   // = TIDY_TEST_ROOT PATH_SEP "testbase";
 
     SPRTF("\n");
-    // TODO: More help
+    SPRTF(" *** A DEPRECIATED PROJECT ***\n");
+    SPRTF(" This was an attempt to automate the 'regression' tests, but that was\n");
+    SPRTF(" before the tests were moved to their own repository, https://github.com/htacg/tidy-html5-tests,\n");
+    SPRTF(" and the tests were automated through batch or script files. Then the devlopment of this\n");
+    SPRTF(" was CEASED. But it remains a simple example of using 'libtidy' to parse an input html file,\n");
+    SPRTF(" test the exit level, and compare the buffered output with a given output file. It will still\n");
+    SPRTF(" 'pass' some of the tests, but when the tests were moved, this original set of tests were\n");
+    SPRTF(" never updated with the correct output results from the current 'libtidy', so now many fail.\n");
+    SPRTF(" *** A DEPRECIATED PROJECT ***\n");
 }
 
 // eof = test-tidy.cxx
