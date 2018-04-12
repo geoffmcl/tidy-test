@@ -23,14 +23,44 @@ static const char *def_log = "tempurl.txt";
 static const char *usr_input = 0;
 static HTTPInputSource httpinput;
 
+/////////////////////////////////////////////////////////////////////////
+static void show_lib_version()
+{
+    ctmbstr prd = tidyReleaseDate();
+    ctmbstr plv = tidyLibraryVersion();
+#ifdef  PLATFORM_NAME
+    SPRTF("%s: Using library HTML Tidy for %s, circa %s, version %s\n", module,
+        PLATFORM_NAME, prd, plv);
+#else
+    SPRTF("%s: Using library HTML Tidy, circa %s, version %s\n", module,
+        prd, plv);
+#endif
+
+}
+
+static void show_version()
+{
+    SPRTF("%s version %s, circa %s\n", module, TT_VERSION, TT_DATE);
+    show_lib_version();
+}
+
+
 void give_help( char *name )
 {
-    SPRTF("%s: usage: [options] usr_input\n", module);
+    show_version();
+    SPRTF("%s: usage: [options] usr_http_url\n", module);
     SPRTF("Options:\n");
-    SPRTF(" --help  (-h or -?) = This help and exit(2)\n");
-    SPRTF(" If given a URL, fetch and tidy the page given.\n");
-
-    // TODO: More help
+    SPRTF(" --help  (-h or -?) = This help, and exit(0)\n");
+    SPRTF(" --version     (-v) = Show version, and exit(0)\n");
+    SPRTF("\n");
+    SPRTF(" If given a http URL, fetch and tidy the page returned.\n");
+    SPRTF(" Uses a crude, simple http GET function in 'httpio.c'.\n");
+    SPRTF(" It can fail for many reasons, and only supports un-redirected\n");
+    SPRTF(" 'http' protocol. If it succeeds it will pass the text received, as\n");
+    SPRTF(" html to 'libtidy', and output the errors/warnings and results.\n");
+    SPRTF("\n");
+    SPRTF(" This app really needs to use a good URL fetching library, like say\n");
+    SPRTF(" CURL, or something, to amount to anything. See the 'urltext' app...\n");
 }
 
 int parse_args( int argc, char **argv )
@@ -51,7 +81,10 @@ int parse_args( int argc, char **argv )
                 give_help(argv[0]);
                 return 2;
                 break;
-            // TODO: Other arguments
+            case 'v':
+                show_version();
+                return 2;
+                // TODO: Other arguments
             default:
                 SPRTF("%s: Unknown argument '%s'. Tyr -? for help...\n", module, arg);
                 return 1;
@@ -218,8 +251,11 @@ int main( int argc, char **argv )
     int iret = 0;
     set_log_file((char *)def_log, 0);
     iret = parse_args(argc,argv);
-    if (iret)
+    if (iret) {
+        if (iret == 2)
+            iret = 0;
         return iret;
+    }
 
     iret = tidy_url();  // actions of app
 
