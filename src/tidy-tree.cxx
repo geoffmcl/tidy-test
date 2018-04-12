@@ -29,7 +29,11 @@ static TidyBuffer txtbuf;
 static size_t total_txt = 0;
 static int txt_nodes = 0;
 
-void show_version()
+#if !defined(TT_VERSION) || !defined(TT_DATE)
+#error "This must be compiled setting TT_VERSION and TT_DATE strings!"
+#endif
+
+void show_lib_version()
 {
     ctmbstr prd = tidyReleaseDate();
     ctmbstr plv = tidyLibraryVersion();
@@ -43,6 +47,12 @@ void show_version()
 
 }
 
+void show_version()
+{
+    SPRTF("%s version %s, circa %s\n", module, TT_VERSION, TT_DATE);
+    show_lib_version();
+}
+
 void give_help( char *name )
 {
     show_version();
@@ -50,7 +60,11 @@ void give_help( char *name )
     SPRTF("%s [options] usr_input\n", module);
     SPRTF("Options:\n");
     SPRTF(" --help  (-h or -?) = This help and exit(0)\n");
-    // TODO: More help
+    SPRTF(" --version     (-v) = show version and exit(0)\n");
+    SPRTF("\n");
+    SPRTF(" The user input file will be passed to 'libtidy' for\n");
+    SPRTF(" parsing, as html, and the resultant DOM like tidy node tree will\n");
+    SPRTF(" be enumerated.\n");
 }
 
 void dumpNode( TidyNode tnod, int indent, int *pcnt )
@@ -193,7 +207,10 @@ int parse_args( int argc, char **argv )
                 give_help(argv[0]);
                 return 2;
                 break;
-            // TODO: Other arguments
+            case 'v':
+                show_version();
+                return 2;
+                // TODO: Other arguments
             default:
                 SPRTF("%s: Unknown argument '%s'. Try -? for help...\n", module, arg);
                 return 1;
@@ -346,7 +363,7 @@ void test_no_doc()
 	// ctmbstr vers = tidyLibraryVersion();
 	// ctmbstr date = tidyReleaseDate();
 	// SPRTF("Testing 'libtidy' version %s (%s)\n", vers, date);
-    show_version();
+    show_lib_version();
     td = tidyCreate();
     int status = tidyCleanAndRepair( td );
     tidyRelease( td ); /* called to free hash tables etc. */

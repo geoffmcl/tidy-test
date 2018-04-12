@@ -8,15 +8,49 @@ set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/CMakeModules ${CMAKE_MODULE_PATH})
 project( tidy-test )
 
 # The version number.
-set( TT_MAJOR 5 )
-set( TT_MINOR 7 )
-set( TT_POINT 3 )
+#set( TT_MAJOR 5 )
+#set( TT_MINOR 7 )
+#set( TT_POINT 3 )
+#------------------------------------------------------------------------
+# Verion Information
+#   The version and date are found in `version.txt`; update *that*
+#   file when required. It will be read into variable `versionFile`
+#   (stripping any newlines or spaces). This file must be formatted into
+#   two lines: the dot-separated MAJOR.MINOR.POINT version, followed by
+#   the date separated YEAR.MONTH.DAY release date.
+#------------------------------------------------------------------------
+file(READ version.txt versionFile)
+if (NOT versionFile)
+    message(FATAL_ERROR "Unable to determine test tidy version. version.txt file is missing.")
+endif()
+string(STRIP "${versionFile}" VERSION_TEXT)
+string(REGEX REPLACE "(.*)[\r\n|\n](.*)" "\\1" LIBTIDY_VERSION ${VERSION_TEXT})
+string(REGEX REPLACE "(.*)[\r\n|\n](.*)" "\\2" LIBTIDY_DATE ${VERSION_TEXT})
+# Establish version number
+if (LIBTIDY_VERSION)
+    string(REPLACE "." ";" VERSION_LIST ${LIBTIDY_VERSION})
+    list(GET VERSION_LIST 0 TT_MAJOR)
+    list(GET VERSION_LIST 1 TT_MINOR)
+    list(GET VERSION_LIST 2 TT_POINT)
+else ()
+    message(FATAL_ERROR "*** FAILED to get a VERSION from version.txt!")
+endif ()   
+# Establish version date
+if (LIBTIDY_DATE)
+    string(REPLACE "." ";" DATE_LIST ${LIBTIDY_DATE})
+    list(GET DATE_LIST 0 TT_YEAR)
+    list(GET DATE_LIST 1 TT_MONTH)
+    list(GET DATE_LIST 2 TT_DAY)
+else ()
+    message(FATAL_ERROR "*** FAILED to get a DATE from version.txt!")
+endif ()
 
 # Option to test libtidy-0.99, libtidy-5.0.0, ... compatibility - should FAIL with 5.5.5 onwards
 option( USE_TIDY5_API "Set ON to test backward compatibility to libtidy-0.99, 5.0.0, onwards." OFF )
 
 add_definitions( -DTIDY_TEST )
 add_definitions( -DTT_VERSION="${TT_MAJOR}.${TT_MINOR}.${TT_POINT}" )
+add_definitions( -DTT_DATE="${TT_YEAR}-${TT_MONTH}-${TT_DAY}" )
 
 if(CMAKE_COMPILER_IS_GNUCXX)
     set( WARNING_FLAGS -Wall )
