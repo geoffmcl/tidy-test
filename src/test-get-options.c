@@ -81,71 +81,83 @@ test (int true_or_false, int * count_ptr, char * format, ...)
     printf ("\n");
 }
 
-int main ()
+static void show_help()
+{
+    char txt[] = " Not sure exactly what is the purpose, but it creates a tidy document,\n"
+        " and gets the option list from the library with API tidyGetOptionList(tdoc),\n"
+        " then gets each option using API tidyGetNextOption(tdoc, &pos),\n"
+        " and outputs a TAP, https://testanything.org/ list as above.\n";
+    printf("%s", txt);
+}
+
+int main (int argc, char **argv)
 {
     TidyIterator pos;
     TidyDoc tdoc;
     int count;
     count = 0;
-#ifdef USE_TIDY5_API
-    printf("Testing libtidy version %s, dated %s\n", tidyLibraryVersion(), tidyReleaseDate());
-#else
-    printf("Testing libtidy version dated %s\n", tidyReleaseDate());
-#endif
+
     tdoc = tidyCreate();    
     pos = tidyGetOptionList( tdoc );
     test (pos != 0, & count, "got a tdoc");
     while (1) {
-	TidyOption to;
-	TidyOptionType tot;
-	const char * name;
-	const char * option_default;
-	int option_default_int;
-	Bool option_default_bool;
-	to = tidyGetNextOption (tdoc, & pos);
-	if (to == 0) {
-	    break;
-	}
-	name = tidyOptGetName (to);
-	test (name != 0, & count, "name is not null");
-	tot = tidyOptGetType (to);
-	if (name) {
-	    test (is_short_ascii_no_ws (name), & count, "name looks OK");
-	    printf ("# %s %d\n", name, tot);
-	}
-	switch (tot) {
-	case TidyString:
-	    test (1, & count, "got a good opt type");
-	    option_default = tidyOptGetDefault (to);
-	    //null seems to be allowed.
-	    //test (option_default != 0, & count, "string default is not null");
-	    if (option_default) {
-		test (is_short_ascii_no_ws (option_default), & count,
-		      "looks like a reasonable default string");
-		printf ("# %s default value is '%s'.\n", name, option_default);
-	    }
-	    break;
-	case TidyInteger:
-	    test (1, & count, "got a good opt type");
-	    option_default_int = tidyOptGetDefaultInt (to);
-	    test (abs (option_default_int) < crazy_number, & count,
-		  "default number doesn't look strange");
-	    printf ("# Integer type default value %d\n", option_default_int);
-	    break;
-	case TidyBoolean:
-	    test (1, & count, "got a good opt type");
-	    option_default_bool = tidyOptGetDefaultInt (to);
-	    test (option_default_bool == 0 || option_default_bool == 1,
-		  & count, "boolean default is 0 or 1");
-	    printf ("# boolean = %d\n", option_default_bool);
-	    break;
-	default:
-	    test (0, & count, "got a good opt type");
-	    printf ("# Unknown value for option type %d.\n", tot);
-	}
+        TidyOption to;
+        TidyOptionType tot;
+        const char * name;
+        const char * option_default;
+        int option_default_int;
+        Bool option_default_bool;
+        to = tidyGetNextOption(tdoc, &pos);
+        if (to == 0) {
+            break;
+        }
+        name = tidyOptGetName(to);
+        test(name != 0, &count, "name is not null");
+        tot = tidyOptGetType(to);
+        if (name) {
+            test(is_short_ascii_no_ws(name), &count, "name looks OK");
+            printf("# %s %d\n", name, tot);
+        }
+        switch (tot) {
+        case TidyString:
+            test(1, &count, "got a good opt type");
+            option_default = tidyOptGetDefault(to);
+            //null seems to be allowed.
+            //test (option_default != 0, & count, "string default is not null");
+            if (option_default) {
+                test(is_short_ascii_no_ws(option_default), &count,
+                    "looks like a reasonable default string");
+                printf("# %s default value is '%s'.\n", name, option_default);
+            }
+            break;
+        case TidyInteger:
+            test(1, &count, "got a good opt type");
+            option_default_int = tidyOptGetDefaultInt(to);
+            test(abs(option_default_int) < crazy_number, &count,
+                "default number doesn't look strange");
+            printf("# Integer type default value %d\n", option_default_int);
+            break;
+        case TidyBoolean:
+            test(1, &count, "got a good opt type");
+            option_default_bool = tidyOptGetDefaultInt(to);
+            test(option_default_bool == 0 || option_default_bool == 1,
+                &count, "boolean default is 0 or 1");
+            printf("# boolean = %d\n", option_default_bool);
+            break;
+        default:
+            test(0, &count, "got a good opt type");
+            printf("# Unknown value for option type %d.\n", tot);
+        }
     }
     // TAP plan
     printf ("1..%d\n", count);
+    printf("\nTest used libtidy version %s, dated %s\n", tidyLibraryVersion(), tidyReleaseDate());
+    if (argc > 1) {
+        printf("\n Note this `test-get-options` app v.%s, date %s, does not take any commands!\n", TT_VERSION, TT_DATE);
+        show_help();
+        return 1;
+    }
+
     return 0;
 }
 
