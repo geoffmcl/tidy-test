@@ -25,12 +25,36 @@ static const char *module = "tidy-buf-test";
 static const char *usr_input = 0;
 //static const char *def_input = "F:\\Projects\\tidy-test\\test\\input5\\in_413.html";
 static const char *def_input = "F:\\Projects\\tidy-test\\test\\input5\\in_413-2.html";
+/////////////////////////////////////////////////////////////////////////
+static void show_lib_version()
+{
+    ctmbstr prd = tidyReleaseDate();
+    ctmbstr plv = tidyLibraryVersion();
+#ifdef  PLATFORM_NAME
+    SPRTF("%s: Using library HTML Tidy for %s, circa %s, version %s\n", module,
+        PLATFORM_NAME, prd, plv);
+#else
+    SPRTF("%s: Using library HTML Tidy, circa %s, version %s\n", module,
+        prd, plv);
+#endif
+
+}
+
+static void show_version()
+{
+    SPRTF("%s version %s, circa %s\n", module, TT_VERSION, TT_DATE);
+    show_lib_version();
+}
+
 
 void give_help( char *name )
 {
+    show_version();
     printf("%s: usage: [options] usr_input\n", module);
     printf("Options:\n");
     printf(" --help  (-h or -?) = This help and exit(0)\n");
+    printf(" --version     (-v) = Show version and exit(0)\n");
+    printf("\n");
     printf(" Given a valid html input file, will load the contents into a tidy buffer,\n");
     printf(" and use tidyParseBuffer() to parse the html, and will then show all the nodes\n");
     printf(" in the tidy tree.\n");
@@ -56,7 +80,10 @@ int parse_args( int argc, char **argv )
                 give_help(argv[0]);
                 return 2;
                 break;
-            // TODO: Other arguments
+            case 'v':
+                show_version();
+                return 2;
+                // TODO: Other arguments
             default:
                 printf("%s: Unknown argument '%s'. Try -? for help...\n", module, arg);
                 return 1;
@@ -123,7 +150,7 @@ byte *getText(byte *text)
 {
     byte *bp = btext;
     byte b;
-    int i, dots, out, len = strlen((char *)text);
+    int i, dots, out, len = (int)strlen((char *)text);
     out = 0;
     for (i = 0; i < len; i++) {
         b = text[i];
@@ -251,7 +278,7 @@ int do_buf_test()
     tdoc = tidyCreate();
     tidyBufInit(&buff);
     printf("%s: Loading file '%s' into a tidy buffer...\n", module, usr_input );
-    while (( res = fread(buffer,1,MY_MX_BUF,fp) ) > 0 ) {
+    while (( res = (int)fread(buffer,1,MY_MX_BUF,fp) ) > 0 ) {
         buffer[res] = 0;
         tidyBufAppend(&buff, buffer, res);
     }
@@ -264,13 +291,29 @@ int do_buf_test()
     tidySetErrorBuffer(tdoc, &errbuf);
     printf("%s: Loaded %d characters into the tidy buffer to pass to 'tidyParseBuffer'...\n", module, buff.size );
     res = tidyParseBuffer(tdoc, &buff);
-    if (res != 0) {
-        printf("%s: Error: Parsing html file data returned %d\n",module, res);
-        if (errbuf.bp && errbuf.size) {
-            printf("%s\n", errbuf.bp );
-        }
-        // return 1;
+    if (res >= 0) {
+        printf("%s: Parsing html file data returned %d\n",module, res);
     }
+    else {
+        printf("%s: Error: Parsing html file data returned %d\n", module, res);
+    }
+    if (res >= 0) {
+        res = tidyCleanAndRepair(tdoc);               // Tidy it up!
+    }
+    if (res >= 0) {
+        res = tidyRunDiagnostics(tdoc);               // Kvetch
+    }
+
+    if (res >= 0)
+    {
+        if (res > 0)
+            printf("\nDiagnostics:\n\n%s", errbuf.bp);
+        else
+            printf("\nDiagnostics: no errors\n\n");
+    }
+    else
+        printf("A severe error (%d) occurred.\n", res);
+
     node = tidyGetRoot(tdoc);
     if (!node) {
         printf("%s: Failed to get ROOT node!\n", module);
