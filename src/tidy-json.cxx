@@ -29,12 +29,17 @@
 #include <iostream>
 #include <sstream>
 #include <fstream>
+#include <vector>
+
+
 
 #ifndef SPRTF
 #define SPRTF printf
 #endif
 
 static const char *module = "tidy-json";
+
+typedef std::vector<std::string> vSTG;
 
 static const char *usr_input = 0;
 static std::string json_str = "";
@@ -44,6 +49,11 @@ static int show_raw_text = 0;
 static const char *indent = "  ";
 static const char *endln = "\n";
 static const char *json_file = "temp.json";
+static const char *msg_json = "tempmsg.json";
+static const char *config_file = 0;
+static const char *lang = 0;
+
+static vSTG messages;
 
 #define MMX_INDENT  1024
 #define flg_needs_comma  0x00001
@@ -56,25 +66,51 @@ static JCTX jcx;
 // forward ref
 int output_node( PJCTX pjcx, TidyNode node, int lev );
 
+/////////////////////////////////////////////////////////////////////////
+static void show_lib_version()
+{
+    ctmbstr prd = tidyReleaseDate();
+    ctmbstr plv = tidyLibraryVersion();
+#ifdef  PLATFORM_NAME
+    SPRTF("%s: Using library HTML Tidy for %s, circa %s, version %s\n", module,
+        PLATFORM_NAME, prd, plv);
+#else
+    SPRTF("%s: Using library HTML Tidy, circa %s, version %s\n", module,
+        prd, plv);
+#endif
+
+}
+
+static void show_version()
+{
+    SPRTF("%s version %s, circa %s\n", module, TT_VERSION, TT_DATE);
+    show_lib_version();
+}
+//////////////////////////////////////////////////////////////////////
+
 void give_help( char *name )
 {
     printf("\n");
+    show_version();
     printf("%s: usage: [options] usr_input\n", module);
     printf("\n");
     printf("Options:\n");
     printf(" --help  (-h or -?) = This help and exit(0)\n");
+    printf(" --version     (-v) = Show version and exit(0)\n");
     printf(" --out <file>  (-o) = Output json to this file. (def=%s)\n", json_file );
+    printf(" --msg <file>  (-m) = Output message json to this file. (def=%s)\n", msg_json);
     printf(" --newline     (-n) = Toggle newlines. (def=%s)\n", add_newline ? "on" : "off");
     printf(" --indent      (-i) = Toggle indenting. (def=%s)\n", add_indent ? "on" : "off");
     printf(" --space <cnt> (-s) = Set indent spaces. (def=%d)\n", (int)strlen(indent));
-    printf(" Indenting only applied if 'newline' is on.\n");
+    printf(" --config <file> (-c) = Set config file to pass to libtidy. (def=%s)\n",
+        config_file ? config_file : "<none>");
+    printf(" --lang <lang>   (-l) = Set language to pass to libtidy. (def=%s)\n",
+        lang ? lang : "<none>");
+
 
     printf("\n");
-#ifdef USE_TIDY5_API
+    printf(" Indenting only applied if 'newline' is on.\n");
     printf(" Will load the assumed HTML input file in libtidy, version %s (%s)\n", tidyLibraryVersion(), tidyReleaseDate());
-#else    
-    printf(" Will load the assumed HTML input file in libtidy, version %s\n", tidyReleaseDate());
-#endif    
     printf(" and convert the node tree to a json output.\n");
     printf("\n");
 }
@@ -132,6 +168,39 @@ int parse_args( int argc, char **argv )
                     return 1;
                 }
                 break;
+            case 'm':
+                if (i2 < argc) {
+                    i++;
+                    sarg = argv[i];
+                    msg_json = strdup(sarg);
+                }
+                else {
+                    printf("%s: Expected file name to follow '%s'!\n", module, arg);
+                    return 1;
+                }
+                break;
+            case 'c':
+                if (i2 < argc) {
+                    i++;
+                    sarg = argv[i];
+                    config_file = strdup(sarg);
+                }
+                else {
+                    printf("%s: Expected file name to follow '%s'!\n", module, arg);
+                    return 1;
+                }
+                break;
+            case 'l':
+                if (i2 < argc) {
+                    i++;
+                    sarg = argv[i];
+                    lang = strdup(sarg);
+                }
+                else {
+                    printf("%s: Expected language name to follow '%s'!\n", module, arg);
+                    return 1;
+                }
+                break;
             case 's':
                 if (i2 < argc) {
                     i++;
@@ -160,7 +229,10 @@ int parse_args( int argc, char **argv )
                     return 1;
                 }
                 break;
-            // TODO: Other arguments
+            case 'v':
+                show_version();
+                return 2;
+                // TODO: Other arguments
             default:
                 printf("%s: Unknown argument '%s'. Try -? for help...\n", module, arg);
                 return 1;
@@ -179,6 +251,41 @@ int parse_args( int argc, char **argv )
         return 1;
     }
     return 0;
+}
+
+void add_msg_string_len(std::string &msg, ctmbstr stg, size_t len, Bool add_quotes)
+{
+    size_t ii;
+    char c;
+    if (add_quotes)
+        msg += "\"";
+    for (ii = 0; ii < len; ii++)
+    {
+        c = stg[ii];
+        if (c >= ' ')
+        {
+            if (c == '"')
+                msg += '\\';
+            else if (c == '\\')
+                msg += '\\';
+            msg += c;
+        }
+        else {
+            if (c == '\n')
+                msg += "\\n";
+            else if (c == '\t')
+                msg += "\\t";
+            else if (c == '\r')
+                msg += "\\r";
+        }
+    }
+    if (add_quotes)
+        msg += "\"";
+}
+
+void add_msg_string(std::string &msg, ctmbstr stg)
+{
+    add_msg_string_len(msg, stg, strlen(stg), yes);
 }
 
 ctmbstr getNodeName( TidyNode node )
@@ -326,7 +433,13 @@ void out_child_node( PJCTX pjcx, TidyNode child, int lev )
     pjcx->state[lev] |= flg_needs_comma;
 }
 
-void add_tbuf_to_json( TidyBuffer *pbuf )
+void add_tbuf_to_json(TidyBuffer *pbuf)
+{
+    if (pbuf && pbuf->size && pbuf->bp)
+        add_msg_string_len(json_str, (ctmbstr)pbuf->bp, pbuf->size, no);
+}
+
+void add_tbuf_to_json2( TidyBuffer *pbuf )
 {
     // json_str += (char *)pbuf->bp;
     uint i;
@@ -357,7 +470,8 @@ void output_file( PJCTX pjcx, int lev )
 
     json_str += "\"in_file\" : ";
     json_str += "\"";
-    json_str += usr_input;
+    add_msg_string_len(json_str, usr_input, strlen(usr_input), no);
+    // json_str += usr_input;
     json_str += "\"";
 
     pjcx->state[lev] |= flg_needs_comma;
@@ -368,7 +482,8 @@ void output_file( PJCTX pjcx, int lev )
 
     json_str += "\"out_file\" : ";
     json_str += "\"";
-    json_str += json_file;
+    add_msg_string_len(json_str, json_file, strlen(json_file), no);
+    //json_str += json_file;
     json_str += "\"";
 
     pjcx->state[lev] |= flg_needs_comma;
@@ -496,12 +611,164 @@ int output_json( PJCTX pjcx, TidyDoc tdoc )
     return iret;
 }
 
+static const char *msg_indent = "      ";
+static char _s_buf[1024];
+
+Bool TIDY_CALL MessageCallback(TidyMessage tmessage)
+{
+    TidyDoc tdoc = tidyGetMessageDoc(tmessage);
+    uint code = tidyGetMessageCode(tmessage);
+    ctmbstr mkey = tidyGetMessageKey(tmessage);
+    int line = tidyGetMessageLine(tmessage);
+    int col = tidyGetMessageColumn(tmessage);
+    TidyReportLevel lev = tidyGetMessageLevel(tmessage);
+    Bool muted = tidyGetMessageIsMuted(tmessage);
+    ctmbstr form = tidyGetMessageFormatDefault(tmessage);
+    ctmbstr def = tidyGetMessageDefault(tmessage);
+    ctmbstr tmsg = tidyGetMessage(tmessage);
+    ctmbstr posd = tidyGetMessagePosDefault(tmessage);
+    ctmbstr pos = tidyGetMessagePos(tmessage);
+    ctmbstr pred = tidyGetMessagePrefixDefault(tmessage);
+    ctmbstr pre = tidyGetMessagePrefix(tmessage);
+    ctmbstr outd = tidyGetMessageOutputDefault(tmessage);
+    ctmbstr out = tidyGetMessageOutput(tmessage);
+    TidyIterator itArg;
+    char *sb = _s_buf;
+    std::string msg;
+
+    msg = "    \"message\": {\n";
+
+    msg += msg_indent;
+    msg += "\"messageLine\": ";
+    sprintf(sb, "%d", line);
+    msg += sb;
+    msg += ",\n";
+
+    msg += msg_indent;
+    msg += "\"messageColumn\": ";
+    sprintf(sb, "%d", col);
+    msg += sb;
+    msg += ",\n";
+
+    msg += msg_indent;
+    msg += "\"messageLevel\": ";
+    sprintf(sb, "%d", lev);
+    msg += sb;
+    msg += ",\n";
+
+    msg += msg_indent;
+    msg += "\"messageIsMuted\": ";
+    msg += (muted ? "true" : "false");
+    msg += ",\n";
+
+    msg += msg_indent;
+    msg += "\"messageDefault\": ";
+    add_msg_string(msg, def);
+    msg += ",\n";
+
+    msg += msg_indent;
+    msg += "\"message\": ";
+    add_msg_string(msg, tmsg);
+    msg += "\n";
+
+    itArg = tidyGetMessageArguments(tmessage);
+    while (itArg) {
+        int arg_int;
+        uint arg_uint;
+        ctmbstr arg_val;
+        double arg_dbl;
+        TidyMessageArgument my_arg = tidyGetNextMessageArgument(tmessage, &itArg);
+        TidyFormatParameterType pt = tidyGetArgType(tmessage, &my_arg);
+        ctmbstr arg_form = tidyGetArgFormat(tmessage, &my_arg);
+        switch (pt)
+        {
+        case tidyFormatType_INT:
+            arg_int = tidyGetArgValueInt(tmessage, &my_arg);
+            break;
+        case tidyFormatType_UINT:
+            arg_uint = tidyGetArgValueUInt(tmessage, &my_arg);
+            break;
+        case tidyFormatType_STRING:
+            arg_val = tidyGetArgValueString(tmessage, &my_arg);
+            break;
+        case tidyFormatType_DOUBLE:
+            arg_dbl = tidyGetArgValueDouble(tmessage, &my_arg);
+            break;
+        case tidyFormatType_UNKNOWN:
+        default:
+            break;
+        }
+    }
+
+    msg += "    }";
+    messages.push_back(msg);
+
+    return no;
+}
+
+void output_message_json()
+{
+    size_t ii, len = messages.size();
+    if (!len)
+        return;
+    FILE *out = fopen(msg_json, "w");
+    if (!out)
+        return;
+    std::string msg;
+    std::string s;
+    msg = "{\n";
+    msg += " \"filename\": ";
+    add_msg_string(msg, usr_input);
+    msg += ",\n";
+    msg += " \"messages\": [\n";
+    for (ii = 0; ii < len; ii++) {
+        s = messages[ii];
+        //msg += "  \"message\": ";
+        msg += s;
+        if ((ii + 1) < len)
+            msg += ",";
+        msg += "\n";
+    }
+
+    msg += " ]\n";
+    msg += "}\n";
+
+    len = msg.size();
+    ii = fwrite(msg.c_str(), 1, len, out);
+    fclose(out);
+
+}
+
+
 int process_input()
 {
     int status, iret = 0;
+    Bool b;
     const char *htmlfil = usr_input;
     TidyDoc tdoc;
     tdoc = tidyCreate();
+    b = tidySetMessageCallback(tdoc, &MessageCallback);
+    if (!b) {
+        printf("WARNING: Failed to set message callback\n");
+    }
+    if (config_file) {
+        if (tidyLoadConfig(tdoc, config_file)) {
+            printf("Failed to load config file '%s'!\n", config_file);
+            iret = 1;
+            iret = 1;
+            goto exit;
+        }
+    }
+    if (lang) {
+        if (!tidySetLanguage(lang))
+        {
+            printf(tidyLocalizedString(TC_STRING_LANG_NOT_FOUND),
+                lang, tidyGetLanguage());
+            printf("\n");
+            iret = 1;
+            goto exit;
+        }
+    }
     status = tidyParseFile( tdoc, htmlfil );
     if ( status >= 0 ) {
         status = tidyCleanAndRepair( tdoc );
@@ -527,6 +794,9 @@ int process_input()
     } 
 
 exit:
+
+    output_message_json();
+
     tidyRelease( tdoc ); /* called to free hash tables etc. */
     return iret;
 }
