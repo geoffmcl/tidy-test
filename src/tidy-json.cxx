@@ -270,6 +270,9 @@ void add_msg_string_len(std::string &msg, ctmbstr stg, size_t len, Bool add_quot
                 msg += '\\';
             msg += c;
         }
+        else if (c & 0x80) {
+            msg += c;   /* Add utf-8 chars */
+        }
         else {
             if (c == '\n')
                 msg += "\\n";
