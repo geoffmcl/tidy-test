@@ -617,6 +617,39 @@ int output_json( PJCTX pjcx, TidyDoc tdoc )
 static const char *msg_indent = "      ";
 static char _s_buf[1024];
 
+typedef struct tagLEV2STG {
+    TidyReportLevel lev;
+    const char *stg;
+    const char *desc;
+}LEV2STG, * PLEV2STG;
+
+static LEV2STG Lev2Stg[] = {
+    { TidyInfo, "TidyInfo", "Report: Information about markup usage" },
+    { TidyWarning, "TidyWarning", "Report: Warning message" },
+    { TidyConfig, "TidyConfig", "Report: Configuration error" },
+    { TidyAccess, "TidyAccess", "Report: Accessibility message" },
+    { TidyError, "TidyError", "Report: Error message - output suppressed" },
+    { TidyBadDocument, "TidyBadDocument", "Report: I/O or file system error" },
+    { TidyFatal, "TidyFatal", "Report: Crash!" },
+    { TidyDialogueSummary, "TidyDialogueSummary", "Dialogue: Summary-related information" },
+    { TidyDialogueInfo, "TidyDialogueInfo", "Dialogue: Non-document related information" },
+    { TidyDialogueFootnote, "TidyDialogueFootnote", "Dialogue: Footnote" },
+    { TidyDialogueDoc, "TidyDialogueDoc", "Dialogue: Deprecated (renamed)" },
+    /* MUST BE LAST*/
+    { (TidyReportLevel)0, 0, 0 }
+};
+
+const char *MsgLeveltoStg(TidyReportLevel lev)
+{
+    PLEV2STG p = Lev2Stg;
+    while (p->stg) {
+        if (p->lev == lev)
+            return p->stg;
+        p++;
+    }
+    return "Uknown";
+}
+
 Bool TIDY_CALL MessageCallback(TidyMessage tmessage)
 {
     TidyDoc tdoc = tidyGetMessageDoc(tmessage);
@@ -635,44 +668,73 @@ Bool TIDY_CALL MessageCallback(TidyMessage tmessage)
     ctmbstr pre = tidyGetMessagePrefix(tmessage);
     ctmbstr outd = tidyGetMessageOutputDefault(tmessage);
     ctmbstr out = tidyGetMessageOutput(tmessage);
+    const char *levstg = MsgLeveltoStg(lev);
+    Bool addnl = (add_newline ? yes : no);
+    Bool addind = ((addnl && add_indent) ? yes : no);
+
     TidyIterator itArg;
     char *sb = _s_buf;
     std::string msg;
 
-    msg = "    \"message\": {\n";
+    msg = "";   /* start blank */
+    if (addind) msg += "    ";
+    msg += "\"message\": {";
+    if (addnl) msg += "\n";
 
-    msg += msg_indent;
+    if (addind) msg += msg_indent;
     msg += "\"messageLine\": ";
     sprintf(sb, "%d", line);
     msg += sb;
-    msg += ",\n";
+    msg += ",";
+    if (addnl) msg += "\n";
 
-    msg += msg_indent;
+    if (addind) msg += msg_indent;
     msg += "\"messageColumn\": ";
     sprintf(sb, "%d", col);
     msg += sb;
-    msg += ",\n";
+    msg += ",";
+    if (addnl) msg += "\n";
 
-    msg += msg_indent;
+    if (addind) msg += msg_indent;
     msg += "\"messageLevel\": ";
-    sprintf(sb, "%d", lev);
-    msg += sb;
-    msg += ",\n";
+    add_msg_string(msg, levstg);
+    msg += ",";
+    if (addnl) msg += "\n";
 
-    msg += msg_indent;
+    if (addind) msg += msg_indent;
     msg += "\"messageIsMuted\": ";
     msg += (muted ? "true" : "false");
-    msg += ",\n";
+    msg += ",";
+    if (addnl) msg += "\n";
 
-    msg += msg_indent;
+    if (addind) msg += msg_indent;
+    msg += "\"messageKey\": ";
+    add_msg_string(msg, mkey);
+    msg += ",";
+    if (addnl) msg += "\n";
+
+    if (addind) msg += msg_indent;
+    msg += "\"messagePreDefault\": ";
+    add_msg_string(msg, pred);
+    msg += ",";
+    if (addnl) msg += "\n";
+
+    if (addind) msg += msg_indent;
+    msg += "\"messagePre\": ";
+    add_msg_string(msg, pre);
+    msg += ",";
+    if (addnl) msg += "\n";
+
+    if (addind) msg += msg_indent;
     msg += "\"messageDefault\": ";
     add_msg_string(msg, def);
-    msg += ",\n";
+    msg += ",";
+    if (addnl) msg += "\n";
 
-    msg += msg_indent;
-    msg += "\"message\": ";
+    if (addind) msg += msg_indent;
+    msg += "\"messageLang\": ";
     add_msg_string(msg, tmsg);
-    msg += "\n";
+    if (addnl) msg += "\n";
 
     itArg = tidyGetMessageArguments(tmessage);
     while (itArg) {
@@ -703,7 +765,9 @@ Bool TIDY_CALL MessageCallback(TidyMessage tmessage)
         }
     }
 
-    msg += "    }";
+    if (addind) msg += "    ";
+    msg += "}";
+
     messages.push_back(msg);
 
     return no;
@@ -711,6 +775,8 @@ Bool TIDY_CALL MessageCallback(TidyMessage tmessage)
 
 void output_message_json()
 {
+    Bool addnl = (add_newline ? yes : no);
+    Bool addind = ((addnl && add_indent) ? yes : no);
     size_t ii, len = messages.size();
     if (!len)
         return;
@@ -719,26 +785,39 @@ void output_message_json()
         return;
     std::string msg;
     std::string s;
-    msg = "{\n";
-    msg += " \"filename\": ";
+    msg = "{";
+    if (addnl) msg += "\n";
+    if (addind) msg += " ";
+    msg += "\"filename\": ";
     add_msg_string(msg, usr_input);
-    msg += ",\n";
-    msg += " \"messages\": [\n";
+    msg += ",";
+    if (addnl) msg += "\n";
+
+    if (addind) msg += " ";
+    msg += "\"messages\": [";
+    if (addnl) msg += "\n";
     for (ii = 0; ii < len; ii++) {
         s = messages[ii];
         //msg += "  \"message\": ";
         msg += s;
         if ((ii + 1) < len)
             msg += ",";
-        msg += "\n";
+        if (addnl) msg += "\n";
     }
 
-    msg += " ]\n";
-    msg += "}\n";
+    if (addind) msg += " ";
+    msg += "]";
+    if (addnl) msg += "\n";
+    msg += "}";
+    if (addnl) msg += "\n";
 
     len = msg.size();
     ii = fwrite(msg.c_str(), 1, len, out);
     fclose(out);
+    if (ii == len)
+        printf("%s: Message json to file '%s'.\n", module, msg_json);
+     else 
+     printf("%s: Message json file '%s' failed!\n", module, msg_json);
 
 }
 
@@ -795,6 +874,11 @@ int process_input()
         printf("%s: Failed tidyCleanAndRepair()!\n", module);
         iret = 1;
     } 
+
+    if (tidyErrorCount(tdoc) || tidyWarningCount(tdoc))
+        tidyErrorSummary(tdoc);
+
+    tidyGeneralInfo(tdoc);
 
 exit:
 
