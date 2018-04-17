@@ -678,7 +678,8 @@ Bool TIDY_CALL MessageCallback(TidyMessage tmessage)
 
     msg = "";   /* start blank */
     if (addind) msg += "    ";
-    msg += "\"message\": {";
+    /*   msg += "\"message\": {"; - this seems WRONG, so */
+    msg += "{";
     if (addnl) msg += "\n";
 
     if (addind) msg += msg_indent;
@@ -777,6 +778,7 @@ void output_message_json()
 {
     Bool addnl = (add_newline ? yes : no);
     Bool addind = ((addnl && add_indent) ? yes : no);
+    ctmbstr lang = tidyGetLanguage();
     size_t ii, len = messages.size();
     if (!len)
         return;
@@ -787,9 +789,34 @@ void output_message_json()
     std::string s;
     msg = "{";
     if (addnl) msg += "\n";
+
     if (addind) msg += " ";
     msg += "\"filename\": ";
     add_msg_string(msg, usr_input);
+    msg += ",";
+    if (addnl) msg += "\n";
+
+    if (addind) msg += " ";
+    msg += "\"language\": ";
+    add_msg_string(msg, lang);
+    msg += ",";
+    if (addnl) msg += "\n";
+
+    if (addind) msg += " ";
+    msg += "\"libtidyVersion\": ";
+    add_msg_string(msg, tidyLibraryVersion());
+    msg += ",";
+    if (addnl) msg += "\n";
+
+    if (addind) msg += " ";
+    msg += "\"libtidyDate\": ";
+    add_msg_string(msg, tidyReleaseDate());
+    msg += ",";
+    if (addnl) msg += "\n";
+
+    if (addind) msg += " ";
+    msg += "\"libtidyPlatform\": ";
+    add_msg_string(msg, tidyPlatform());
     msg += ",";
     if (addnl) msg += "\n";
 
@@ -808,6 +835,7 @@ void output_message_json()
     if (addind) msg += " ";
     msg += "]";
     if (addnl) msg += "\n";
+
     msg += "}";
     if (addnl) msg += "\n";
 
@@ -817,7 +845,7 @@ void output_message_json()
     if (ii == len)
         printf("%s: Message json to file '%s'.\n", module, msg_json);
      else 
-     printf("%s: Message json file '%s' failed!\n", module, msg_json);
+        printf("%s: Message json file '%s' failed!\n", module, msg_json);
 
 }
 
