@@ -48,15 +48,17 @@ static int add_indent = 1;
 static int show_raw_text = 0;
 static const char *indent = "  ";
 static const char *endln = "\n";
-static const char *json_file = "temp.json";
+static const char *json_file = "tempnode.json";
 static const char *msg_json = "tempmsg.json";
-static const char *config_file = 0;
-static const char *lang = 0;
+static const char *config_file = 0; /* passed to 'libtidy', def <none> */
+static const char *lang = 0; /* passed to 'libtidy', def <none> */
 
-static vSTG messages;
+static vSTG messages;   /* accumulation of 'messages' arriving at 'callback' */
 
 #define MMX_INDENT  1024
 #define flg_needs_comma  0x00001
+
+static char _s_buf[1024];
 
 typedef struct tagJCTX {
     TidyDoc doc;
@@ -346,23 +348,38 @@ ctmbstr getNodeName( TidyNode node )
     return name;
 }
 
+void add_newline_to_json(std::string &json)
+{
+    if (add_newline) {
+        size_t len = json.size();
+        if (len) {
+            len--;
+            json += endln;
+        }
+    }
+}
+
+void add_indent_to_json(std::string &json, int lev)
+{
+    if (add_indent && add_newline) {
+        int i;
+        for (i = 0; i < lev; i++)
+            json += indent;
+    }
+}
+
+
 void add_a_newline()
 {
     if (add_newline) {
-        size_t len = json_str.size();
-        if (len) {
-            len--;
-            json_str += endln;
-        }
+        add_newline_to_json(json_str);
     }
 }
 
 void add_indent_str(int lev)
 {
     if (add_indent && add_newline) {
-        int i;
-        for (i = 0; i < lev; i++)
-            json_str += indent;
+        add_indent_to_json(json_str, lev);
     }
 }
 
@@ -614,9 +631,6 @@ int output_json( PJCTX pjcx, TidyDoc tdoc )
     return iret;
 }
 
-static const char *msg_indent = "      ";
-static char _s_buf[1024];
-
 typedef struct tagLEV2STG {
     TidyReportLevel lev;
     const char *stg;
@@ -677,65 +691,65 @@ Bool TIDY_CALL MessageCallback(TidyMessage tmessage)
     std::string msg;
 
     msg = "";   /* start blank */
-    if (addind) msg += "    ";
+    if (addind) add_indent_to_json(msg, 2);
     /*   msg += "\"message\": {"; - this seems WRONG, so */
     msg += "{";
-    if (addnl) msg += "\n";
+    if (addnl) add_newline_to_json(msg);
 
-    if (addind) msg += msg_indent;
+    if (addind) add_indent_to_json(msg, 3);
     msg += "\"messageLine\": ";
     sprintf(sb, "%d", line);
     msg += sb;
     msg += ",";
-    if (addnl) msg += "\n";
+    if (addnl) add_newline_to_json(msg);
 
-    if (addind) msg += msg_indent;
+    if (addind) add_indent_to_json(msg, 3);
     msg += "\"messageColumn\": ";
     sprintf(sb, "%d", col);
     msg += sb;
     msg += ",";
-    if (addnl) msg += "\n";
+    if (addnl) add_newline_to_json(msg);
 
-    if (addind) msg += msg_indent;
+    if (addind) add_indent_to_json(msg, 3);
     msg += "\"messageLevel\": ";
     add_msg_string(msg, levstg);
     msg += ",";
-    if (addnl) msg += "\n";
+    if (addnl) add_newline_to_json(msg);
 
-    if (addind) msg += msg_indent;
+    if (addind) add_indent_to_json(msg, 3);
     msg += "\"messageIsMuted\": ";
     msg += (muted ? "true" : "false");
     msg += ",";
-    if (addnl) msg += "\n";
+    if (addnl) add_newline_to_json(msg);
 
-    if (addind) msg += msg_indent;
+    if (addind) add_indent_to_json(msg, 3);
     msg += "\"messageKey\": ";
     add_msg_string(msg, mkey);
     msg += ",";
-    if (addnl) msg += "\n";
+    if (addnl) add_newline_to_json(msg);
 
-    if (addind) msg += msg_indent;
+    if (addind) add_indent_to_json(msg, 3);
     msg += "\"messagePreDefault\": ";
     add_msg_string(msg, pred);
     msg += ",";
-    if (addnl) msg += "\n";
+    if (addnl) add_newline_to_json(msg);
 
-    if (addind) msg += msg_indent;
+    if (addind) add_indent_to_json(msg, 3);
     msg += "\"messagePre\": ";
     add_msg_string(msg, pre);
     msg += ",";
-    if (addnl) msg += "\n";
+    if (addnl) add_newline_to_json(msg);
 
-    if (addind) msg += msg_indent;
+    if (addind) add_indent_to_json(msg, 3);
     msg += "\"messageDefault\": ";
     add_msg_string(msg, def);
     msg += ",";
-    if (addnl) msg += "\n";
+    if (addnl) add_newline_to_json(msg);
 
-    if (addind) msg += msg_indent;
+    if (addind) add_indent_to_json(msg, 3);
     msg += "\"messageLang\": ";
     add_msg_string(msg, tmsg);
-    if (addnl) msg += "\n";
+    if (addnl) add_newline_to_json(msg);
 
     itArg = tidyGetMessageArguments(tmessage);
     while (itArg) {
@@ -766,7 +780,7 @@ Bool TIDY_CALL MessageCallback(TidyMessage tmessage)
         }
     }
 
-    if (addind) msg += "    ";
+    if (addind) add_indent_to_json(msg, 2);
     msg += "}";
 
     messages.push_back(msg);
@@ -788,56 +802,56 @@ void output_message_json()
     std::string msg;
     std::string s;
     msg = "{";
-    if (addnl) msg += "\n";
+    if (addnl) add_newline_to_json(msg);
 
-    if (addind) msg += " ";
+    if (addind) add_indent_to_json(msg, 1);
     msg += "\"filename\": ";
     add_msg_string(msg, usr_input);
     msg += ",";
-    if (addnl) msg += "\n";
+    if (addnl) add_newline_to_json(msg);
 
-    if (addind) msg += " ";
+    if (addind) add_indent_to_json(msg, 1);
     msg += "\"language\": ";
     add_msg_string(msg, lang);
     msg += ",";
-    if (addnl) msg += "\n";
+    if (addnl) add_newline_to_json(msg);
 
-    if (addind) msg += " ";
+    if (addind) add_indent_to_json(msg, 1);
     msg += "\"libtidyVersion\": ";
     add_msg_string(msg, tidyLibraryVersion());
     msg += ",";
-    if (addnl) msg += "\n";
+    if (addnl) add_newline_to_json(msg);
 
-    if (addind) msg += " ";
+    if (addind) add_indent_to_json(msg, 1);
     msg += "\"libtidyDate\": ";
     add_msg_string(msg, tidyReleaseDate());
     msg += ",";
-    if (addnl) msg += "\n";
+    if (addnl) add_newline_to_json(msg);
 
-    if (addind) msg += " ";
+    if (addind) add_indent_to_json(msg, 1);
     msg += "\"libtidyPlatform\": ";
     add_msg_string(msg, tidyPlatform());
     msg += ",";
-    if (addnl) msg += "\n";
+    if (addnl) add_newline_to_json(msg);
 
-    if (addind) msg += " ";
+    if (addind) add_indent_to_json(msg, 1);
     msg += "\"messages\": [";
-    if (addnl) msg += "\n";
+    if (addnl) add_newline_to_json(msg);
     for (ii = 0; ii < len; ii++) {
         s = messages[ii];
         //msg += "  \"message\": ";
         msg += s;
         if ((ii + 1) < len)
             msg += ",";
-        if (addnl) msg += "\n";
+        if (addnl) add_newline_to_json(msg);
     }
 
-    if (addind) msg += " ";
+    if (addind) add_indent_to_json(msg, 1);
     msg += "]";
-    if (addnl) msg += "\n";
+    if (addnl) add_newline_to_json(msg);
 
     msg += "}";
-    if (addnl) msg += "\n";
+    if (addnl) add_newline_to_json(msg);
 
     len = msg.size();
     ii = fwrite(msg.c_str(), 1, len, out);
