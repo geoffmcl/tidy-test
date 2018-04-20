@@ -517,6 +517,7 @@ int output_node( PJCTX pjcx, TidyNode node, int lev )
     TidyDoc doc = pjcx->doc;
     TidyBuffer buf;
     tidyBufInit(&buf);
+    char * sb = _s_buf;
 
     TidyNode child = tidyGetChild(node);
     TidyNodeType nt = tidyNodeGetType(node);
@@ -527,10 +528,25 @@ int output_node( PJCTX pjcx, TidyNode node, int lev )
     add_a_newline();
     add_indent_str(lev);
 
-    json_str += "\"name\" : ";
+    json_str += "\"nodeName\" : ";
     json_str += "\"";
     json_str += name;
     json_str += "\"";
+    json_str += ",";
+
+    add_a_newline();
+    add_indent_str(lev);
+    json_str += "\"nodeLine\" : ";
+    sprintf(sb, "%d", tidyNodeLine(node));
+    json_str += sb;
+    json_str += ",";
+
+    add_a_newline();
+    add_indent_str(lev);
+    json_str += "\"nodeColumn\" : ";
+    sprintf(sb, "%d", tidyNodeColumn(node));
+    json_str += sb;
+    //json_str += ",";
 
     pjcx->state[lev] |= flg_needs_comma;
 
