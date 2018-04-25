@@ -30,7 +30,7 @@
 #include <sstream>
 #include <fstream>
 #include <vector>
-
+#include <time.h>
 
 
 #ifndef SPRTF
@@ -683,28 +683,29 @@ const char *MsgLeveltoStg(TidyReportLevel lev)
 Bool TIDY_CALL MessageCallback(TidyMessage tmessage)
 {
     TidyDoc tdoc = tidyGetMessageDoc(tmessage);
-    uint code = tidyGetMessageCode(tmessage);
-    ctmbstr mkey = tidyGetMessageKey(tmessage);
-    int line = tidyGetMessageLine(tmessage);
-    int col = tidyGetMessageColumn(tmessage);
-    TidyReportLevel lev = tidyGetMessageLevel(tmessage);
-    Bool muted = tidyGetMessageIsMuted(tmessage);
-    ctmbstr form = tidyGetMessageFormatDefault(tmessage);
-    ctmbstr def = tidyGetMessageDefault(tmessage);
-    ctmbstr tmsg = tidyGetMessage(tmessage);
-    ctmbstr posd = tidyGetMessagePosDefault(tmessage);
-    ctmbstr pos = tidyGetMessagePos(tmessage);
-    ctmbstr pred = tidyGetMessagePrefixDefault(tmessage);
-    ctmbstr pre = tidyGetMessagePrefix(tmessage);
-    ctmbstr outd = tidyGetMessageOutputDefault(tmessage);
-    ctmbstr out = tidyGetMessageOutput(tmessage);
-    const char *levstg = MsgLeveltoStg(lev);
+    uint msgcode = tidyGetMessageCode(tmessage);
+    ctmbstr mkey = tidyGetMessageKey(tmessage);         /* messageKey */
+    int msgline = tidyGetMessageLine(tmessage);         /* messageLine */
+    int msgcol = tidyGetMessageColumn(tmessage);        /* messageColumn */
+    Bool muted = tidyGetMessageIsMuted(tmessage);       /* messageIsMuted */
+    ctmbstr msgform = tidyGetMessageFormatDefault(tmessage); /* messageForm */
+    ctmbstr msgdef = tidyGetMessageDefault(tmessage);   /* messageDef */
+    ctmbstr msgloc = tidyGetMessage(tmessage);          /* messageLoc */
+    ctmbstr msgposd = tidyGetMessagePosDefault(tmessage);   /* messagePosDef */
+    ctmbstr msgpos = tidyGetMessagePos(tmessage);           /* messagePosLoc */
+    ctmbstr pred = tidyGetMessagePrefixDefault(tmessage);   /* messagePreDef */
+    ctmbstr pre = tidyGetMessagePrefix(tmessage);           /* messagePreLoc */
+    ctmbstr msgoutd = tidyGetMessageOutputDefault(tmessage);/* messageOutDef */
+    ctmbstr msgoutl = tidyGetMessageOutput(tmessage);       /* messageOutLoc */
+    TidyReportLevel lev = tidyGetMessageLevel(tmessage);    /* enumerated value */
+    const char *levstg = MsgLeveltoStg(lev);            /* messageLevel */
     Bool addnl = (add_newline ? yes : no);
     Bool addind = ((addnl && add_indent) ? yes : no);
 
     TidyIterator itArg;
     char *sb = _s_buf;
     std::string msg;
+    int argcnt = 0;
 
     msg = "";   /* start blank */
     if (addind) add_indent_to_json(msg, 2);
@@ -714,14 +715,14 @@ Bool TIDY_CALL MessageCallback(TidyMessage tmessage)
 
     if (addind) add_indent_to_json(msg, 3);
     msg += "\"messageLine\": ";
-    sprintf(sb, "%d", line);
+    sprintf(sb, "%d", msgline);
     msg += sb;
     msg += ",";
     if (addnl) add_newline_to_json(msg);
 
     if (addind) add_indent_to_json(msg, 3);
     msg += "\"messageColumn\": ";
-    sprintf(sb, "%d", col);
+    sprintf(sb, "%d", msgcol);
     msg += sb;
     msg += ",";
     if (addnl) add_newline_to_json(msg);
@@ -745,56 +746,202 @@ Bool TIDY_CALL MessageCallback(TidyMessage tmessage)
     if (addnl) add_newline_to_json(msg);
 
     if (addind) add_indent_to_json(msg, 3);
-    msg += "\"messagePreDefault\": ";
+    msg += "\"messagePreDef\": ";
     add_msg_string(msg, pred);
     msg += ",";
     if (addnl) add_newline_to_json(msg);
 
     if (addind) add_indent_to_json(msg, 3);
-    msg += "\"messagePre\": ";
+    msg += "\"messagePreLoc\": ";
     add_msg_string(msg, pre);
     msg += ",";
     if (addnl) add_newline_to_json(msg);
 
     if (addind) add_indent_to_json(msg, 3);
-    msg += "\"messageDefault\": ";
-    add_msg_string(msg, def);
+    msg += "\"messageDef\": ";
+    add_msg_string(msg, msgdef);
     msg += ",";
     if (addnl) add_newline_to_json(msg);
 
     if (addind) add_indent_to_json(msg, 3);
-    msg += "\"messageLang\": ";
-    add_msg_string(msg, tmsg);
+    msg += "\"messageLoc\": ";
+    add_msg_string(msg, msgloc);
+    msg += ",";
+    if (addnl) add_newline_to_json(msg);
+
+    if (addind) add_indent_to_json(msg, 3);
+    msg += "\"messageForm\": ";
+    add_msg_string(msg, msgform);
+    msg += ",";
+    if (addnl) add_newline_to_json(msg);
+
+    if (addind) add_indent_to_json(msg, 3);
+    msg += "\"messagePosDef\": ";
+    add_msg_string(msg, msgposd);
+    msg += ",";
+    if (addnl) add_newline_to_json(msg);
+
+    if (addind) add_indent_to_json(msg, 3);
+    msg += "\"messagePosLoc\": ";
+    add_msg_string(msg, msgpos);
+    msg += ",";
+    if (addnl) add_newline_to_json(msg);
+
+    if (addind) add_indent_to_json(msg, 3);
+    msg += "\"messageOutDef\": ";
+    add_msg_string(msg, msgoutd);
+    msg += ",";
+    if (addnl) add_newline_to_json(msg);
+
+    if (addind) add_indent_to_json(msg, 3);
+    msg += "\"messageOutLoc\": ";
+    add_msg_string(msg, msgoutl);
+    msg += ",";
     if (addnl) add_newline_to_json(msg);
 
     itArg = tidyGetMessageArguments(tmessage);
-    while (itArg) {
-        int arg_int;
-        uint arg_uint;
-        ctmbstr arg_val;
-        double arg_dbl;
-        TidyMessageArgument my_arg = tidyGetNextMessageArgument(tmessage, &itArg);
-        TidyFormatParameterType pt = tidyGetArgType(tmessage, &my_arg);
-        ctmbstr arg_form = tidyGetArgFormat(tmessage, &my_arg);
-        switch (pt)
-        {
-        case tidyFormatType_INT:
-            arg_int = tidyGetArgValueInt(tmessage, &my_arg);
-            break;
-        case tidyFormatType_UINT:
-            arg_uint = tidyGetArgValueUInt(tmessage, &my_arg);
-            break;
-        case tidyFormatType_STRING:
-            arg_val = tidyGetArgValueString(tmessage, &my_arg);
-            break;
-        case tidyFormatType_DOUBLE:
-            arg_dbl = tidyGetArgValueDouble(tmessage, &my_arg);
-            break;
-        case tidyFormatType_UNKNOWN:
-        default:
-            break;
+    if (itArg) {
+        if (addind) add_indent_to_json(msg, 3);
+        msg += "\"messageArguments\": [";
+        if (addnl) add_newline_to_json(msg);
+        while (itArg) {
+            int arg_int;
+            uint arg_uint;
+            ctmbstr arg_val;
+            double arg_dbl;
+            TidyMessageArgument my_arg = tidyGetNextMessageArgument(tmessage, &itArg);
+            TidyFormatParameterType pt = tidyGetArgType(tmessage, &my_arg);
+            ctmbstr arg_form = tidyGetArgFormat(tmessage, &my_arg);
+            switch (pt)
+            {
+            case tidyFormatType_INT:
+                arg_int = tidyGetArgValueInt(tmessage, &my_arg);
+                if (argcnt) {
+                    if (addind) add_indent_to_json(msg, 4);
+                    msg += ",";
+                    if (addnl) add_newline_to_json(msg);
+                }
+                if (addind) add_indent_to_json(msg, 4);
+                msg += "{";
+                if (addnl) add_newline_to_json(msg);
+
+                if (addind) add_indent_to_json(msg, 4);
+                msg += "\"type\": \"INT\"";
+                msg += ",";
+                if (addnl) add_newline_to_json(msg);
+
+                if (addind) add_indent_to_json(msg, 4);
+                msg += "\"value\": ";
+                sprintf(sb, "%d", arg_int);
+                msg += sb;
+                // msg += ",";
+                if (addnl) add_newline_to_json(msg);
+
+                /* close */
+                if (addind) add_indent_to_json(msg, 4);
+                msg += "}";
+                if (addnl) add_newline_to_json(msg);
+                argcnt++;
+                break;
+            case tidyFormatType_UINT:
+                arg_uint = tidyGetArgValueUInt(tmessage, &my_arg);
+                if (argcnt) {
+                    if (addind) add_indent_to_json(msg, 4);
+                    msg += ",";
+                    if (addnl) add_newline_to_json(msg);
+                }
+                if (addind) add_indent_to_json(msg, 4);
+                msg += "{";
+                if (addnl) add_newline_to_json(msg);
+
+                if (addind) add_indent_to_json(msg, 4);
+                msg += "\"type\": \"UINT\"";
+                msg += ",";
+                if (addnl) add_newline_to_json(msg);
+
+                if (addind) add_indent_to_json(msg, 4);
+                msg += "\"value\": ";
+                sprintf(sb, "%u", arg_uint);
+                msg += sb;
+                // msg += ",";
+                if (addnl) add_newline_to_json(msg);
+
+                if (addind) add_indent_to_json(msg, 4);
+                msg += "}";
+                if (addnl) add_newline_to_json(msg);
+                argcnt++;
+                break;
+            case tidyFormatType_STRING:
+                arg_val = tidyGetArgValueString(tmessage, &my_arg);
+                if (argcnt) {
+                    if (addind) add_indent_to_json(msg, 4);
+                    msg += ",";
+                    if (addnl) add_newline_to_json(msg);
+                }
+                if (addind) add_indent_to_json(msg, 4);
+                msg += "{";
+                if (addnl) add_newline_to_json(msg);
+
+                if (addind) add_indent_to_json(msg, 4);
+                msg += "\"type\": \"STRING\"";
+                msg += ",";
+                if (addnl) add_newline_to_json(msg);
+
+                if (addind) add_indent_to_json(msg, 4);
+                msg += "\"value\": ";
+                add_msg_string(msg, arg_val);
+                // msg += ",";
+                if (addnl) add_newline_to_json(msg);
+
+                /* close */
+                if (addind) add_indent_to_json(msg, 4);
+                msg += "}";
+                if (addnl) add_newline_to_json(msg);
+                argcnt++;
+                break;
+            case tidyFormatType_DOUBLE:
+                arg_dbl = tidyGetArgValueDouble(tmessage, &my_arg);
+                if (argcnt) {
+                    if (addind) add_indent_to_json(msg, 4);
+                    msg += ",";
+                    if (addnl) add_newline_to_json(msg);
+                }
+                if (addind) add_indent_to_json(msg, 4);
+                msg += "{";
+                if (addnl) add_newline_to_json(msg);
+                if (addind) add_indent_to_json(msg, 4);
+                msg += "\"type\": \"DOUBLE\"";
+                if (addnl) add_newline_to_json(msg);
+                if (addind) add_indent_to_json(msg, 4);
+                msg += "}";
+                if (addnl) add_newline_to_json(msg);
+                argcnt++;
+                break;
+            case tidyFormatType_UNKNOWN:
+            default:
+                break;
+            }
+            //argcnt++;
         }
+        if (addind) add_indent_to_json(msg, 3);
+        msg += "],";
+        if (addnl) add_newline_to_json(msg);
+
     }
+    if (addind) add_indent_to_json(msg, 3);
+    msg += "\"messageArgCount\": ";
+    sprintf(sb, "%d", argcnt);
+    msg += sb;
+    msg += ",";
+    if (addnl) add_newline_to_json(msg);
+
+    /* LAST ENTRY = no comma */
+    if (addind) add_indent_to_json(msg, 3);
+    msg += "\"messageCode\": ";
+    sprintf(sb, "%u", msgcode);
+    msg += sb;
+    //msg += ",";
+    if (addnl) add_newline_to_json(msg);
 
     if (addind) add_indent_to_json(msg, 2);
     msg += "}";
@@ -863,7 +1010,14 @@ void output_message_json()
     }
 
     if (addind) add_indent_to_json(msg, 1);
-    msg += "]";
+    msg += "],";
+    if (addnl) add_newline_to_json(msg);
+
+    /* last item - no comma */
+    if (addind) add_indent_to_json(msg, 1);
+    msg += "\"currentDate\": ";
+    time_t now = time(0);
+    add_msg_string(msg, ctime(&now));
     if (addnl) add_newline_to_json(msg);
 
     msg += "}";
