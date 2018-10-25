@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head> <meta charset="utf-8">
+        <title>Is #726 - Tidy does not detect dupe IDs if they have uppercase letters</title>
+    </head>
+    <body>
+        <p    id="foo">1</p>
+        <div  id="foo">2</div>
+        <span id="foo">3</span>
+
+        <p    id="foo99">1</p>
+        <div  id="foo99">2</div>
+        <span id="foo99">3</span>
+
+        <p    id="Foo">1</p>
+        <div  id="Foo">2</div>
+        <span id="Foo">3</span>
+
+        <p    id="FOO">1</p>
+        <div  id="FOO">2</div>
+        <span id="FOO">3</span>
+
+        <a name="foo">1</a>
+        <a name="foo">2</a>
+        <a name="foo">3</a>
+
+        <a name="FOO">1</a>
+        <a name="FOO">2</a>
+        <a name="FOO">3</a>
+    </body>
+</html>
+
