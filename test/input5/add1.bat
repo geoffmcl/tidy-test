@@ -1,4 +1,9 @@
 @setlocal
+@if "%~1x" == "x" (
+@echo Usage: in-file "message"
+@exit /b 1
+)
+
 @if NOT EXIST %1 (
 @echo Can NOT locate %1
 @exit /b 1
