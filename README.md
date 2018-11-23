@@ -1,4 +1,4 @@
-# tidy-test 20160311
+# tidy-test 20181123
 
 Some simple test cases using a cmake FindTidy.cmake module to find libtidy as a 3rdParty library, and then using the Tidy API.
 
@@ -46,9 +46,30 @@ It does nothing except parse some canned html text, and shows how to get the esc
 
 All input and output is using a `TidyBuffer`, so includes `<tidybuffio.h>`. **NOTE** the name change on Rel 5 - was `buffio.h` before...
 
+### Build Project
+
+This is a [CMake](https://cmake.org/) project, and must be installed. CMake is a build system that uses a single script (defined in a CMakeLists.txt file) to generate appropriate platform-specific build scripts. A `cmake --help` will show the list of **generators** available on your system. Adjust the `Build System` below to your choice, but usually cmake defaults to what is available.
+
+ * cd build
+ * cmake .. [-G "Build System"] [-DCMAKE_BUILD_TYPE=Release] [... other options ...]
+ 
+This will generate the native build files appropriate to your choice, so the next step depends on these tools. 
+
+If that is the common `Unix Makefiles`, then you just need to run `$ make`. There is no install target.
+
+If it is a version of Windows MSVC, like `-G "Visual Studio 14 Win64"`, then the next step can be `cmake --build . --config Release`. Again there is no install target.
+
+CMake offer a GUI setup. Just set the source code and binary build directories, choose a `generator`, `configure` and `generate`...
+
+During the `configure` stage cmake **must** find an installed tidy library, static or shared. For certain apps in the suite, CURL must be found, and ZLIB... 
+
+If these 3rd party packages are installed in a `custom` folder, and this must be passed to cmake, like `-DCMAKE_INSTALL_PREFIX=F:\Projects\software.x64`, or using like  `CMAKE_PREFIX_PATH:PATH=X:\3rdParty.x64`...
+
+The `build` directory in the source contains a convenient `build-me.sh` and `build-me.bat` which may work for you. Or at least serve as a model.
+
 Enjoy.
 
 Geoff  
-20160311 - 20151101 - 20151011 - 20150701 - 20150610 - 20150520
+20181123 - 20160311 - 20151101 - 20151011 - 20150701 - 20150610 - 20150520
 
 ; eof
