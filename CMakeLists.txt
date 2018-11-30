@@ -414,6 +414,20 @@ if (USE_TIDY5_API)
 endif ()
 
 ################################################################
+### test-locale.c - show current local like tidy sees it
+### 2018-11-30 - I18N isn't working (mostly) via changing the environment variables #783
+set(name test-locale)
+set(dir src)
+set(${name}_SRCS
+    ${dir}/${name}.c
+    )
+add_executable( ${name} ${${name}_SRCS} )
+target_link_libraries( ${name} ${add_LIBS} )
+if (MSVC)
+    set_target_properties( ${name} PROPERTIES DEBUG_POSTFIX d )
+endif ()
+
+################################################################
 ### tidy-buf-test - Issue #413 - Using tidyParseBuffer
 set(name tidy-buf-test)
 set(dir src)
