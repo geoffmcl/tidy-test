@@ -489,4 +489,19 @@ if (WIN32)
     endif ()
 endif (WIN32)
 
+# 20190204 Is. #788 maybe exposed a case where output to a TidyBuffer
+# could have an overrun... but not yet proved. This uses the 
+# same technique as oss-fuzz projet tidy-html5/tidy_fuzzer.c
+# to try to repeat the possible bug...
+set(name tidy-by-buf)
+set(dir src)
+set(${name}_SRCS
+    ${dir}/${name}.c
+    )
+add_executable( ${name} ${${name}_SRCS} )
+target_link_libraries( ${name} ${add_LIBS} )
+if (MSVC)
+    set_target_properties( ${name} PROPERTIES DEBUG_POSTFIX d )
+endif ()
+
 # eof
