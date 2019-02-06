@@ -5,6 +5,8 @@ TMPLOG="bldlog-1.txt"
 TMPBIN="tidy-test"
 VERBOSE="0"
 RUNBIN=0
+TMPDAT=`date +%Y/%m/%d`
+TMPTIM=`date +%H:%M:%S`
 
 TMPTOPS=
 for arg in $*; do
@@ -20,8 +22,8 @@ if [ -f "$TMPLOG" ]; then
     rm -f $TMPLOG
 fi
 
-echo "$BN: Build of tidy-test... output to $TMPLOG"
-echo "$BN: Build of tidy-test..." > $TMPLOG
+echo "$BN: Build of tidy-test on $TMPDAT $TMPTIM - output to $TMPLOG"
+echo "$BN: Build of tidy-test on $TMPDAT $TMPTIM" > $TMPLOG
 
 echo "$BN: Doing 'cmake .. $TMPOPTS'"
 echo "$BN: Doing 'cmake .. $TMPOPTS'" >> $TMPLOG
