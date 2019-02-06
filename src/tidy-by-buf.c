@@ -33,7 +33,9 @@ static const char *module = "tidy-by-buf";
 
 static const char *usr_input = 0;
 static FILE* errout = NULL;  // stderr;  /* initialize to stderr */
+static const char *err_fil = NULL;
 static FILE* htmout = NULL;  // stdout if NULL */
+static const char *htm_fil = NULL;
 static int verbosity = 0;
 
 #define VERB1 (verbosity >= 1)
@@ -113,24 +115,28 @@ int run_tidy_parser(TidyBuffer* data_buffer,
 {
     int rc = -1;
     TidyDoc tdoc = tidyCreate();
-    if (!tdoc)
+    if (!tdoc) {
+        printf("%s: Failed tidyCreate()\n", module);
         abort();
+    }
 
     rc = tidySetErrorBuffer(tdoc, error_buffer); /* // Capture diagnostics */
-    if (rc < 0) 
+    if (rc < 0) {
+        printf("%s: Failed tidySetErrorBuffer()\n", module);
         abort();
+    }
 
     /* set options */
     tidyOptSetBool(tdoc, TidyXhtmlOut, yes);
     tidyOptSetBool(tdoc, TidyForceOutput, yes);
 
-    rc = tidyParseBuffer(tdoc, data_buffer);    /* // Parse the input */
+    rc = tidyParseBuffer(tdoc, data_buffer);    /* // Parse the input, from a TidyBuffer */
     if (rc >= 0)
         rc = tidyCleanAndRepair(tdoc);          /* // Tidy it up! */
     if (rc >= 0)
         rc = tidyRunDiagnostics(tdoc);          /* // Kvetch */
     if (rc >= 0) 
-        rc = tidySaveBuffer(tdoc, output_buffer); /* // Pretty Print */
+        rc = tidySaveBuffer(tdoc, output_buffer); /* // Pretty Print, to a TidyBuffer */
 
 
     tidyRelease(tdoc);
@@ -290,6 +296,9 @@ int main( int argc, char **argv )
     }
 
     iret = tidy_by_buffer(); // actions of app
+
+    if (usr_input)
+        free((char *)usr_input);
 
     return iret;
 }
