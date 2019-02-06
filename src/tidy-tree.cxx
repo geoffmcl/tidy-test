@@ -253,14 +253,15 @@ enum DiskType {
 
 DiskType is_file_or_directory( const char * path )
 {
-    if (!path)
-        return MDT_NONE;
-	if (stat(path,&buf) == 0)
-	{
-		if (buf.st_mode & M_IS_DIR)
-			return MDT_DIR;
-		else
-			return MDT_FILE;
+    if (path && (path[0] != 0))
+    {
+	    if (stat(path,&buf) == 0)
+	    {
+		    if (buf.st_mode & M_IS_DIR)
+			    return MDT_DIR;
+		    else
+			    return MDT_FILE;
+	    }
 	}
 	return MDT_NONE;
 }
