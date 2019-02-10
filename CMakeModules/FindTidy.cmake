@@ -77,11 +77,22 @@ if (_TIDY_SEARCHES)
             PATHS ${search}
             PATH_SUFFIXES include
             )
-          find_library(TIDY_LIBRARY
-            NAMES ${TIDY_NAMES}
-            PATHS ${search}
-            PATH_SUFFIXES lib
-            )
+          if (USE_TIDY_STATIC)
+            # search for the static  
+            find_library(TIDY_LIBRARY
+                NAMES tidys
+                PATHS ${search}
+                PATH_SUFFIXES lib
+                )
+          endif ()
+          if (NOT TIDY_LIBRARY)
+            # search for the shared  
+            find_library(TIDY_LIBRARY
+                NAMES ${TIDY_NAMES}
+                PATHS ${search}
+                PATH_SUFFIXES lib
+                )
+          endif ()
         endforeach()
     endif ()
 
@@ -91,10 +102,20 @@ else ()
         NAMES tidy.h
         PATH_SUFFIXES include
     )
-    find_library(TIDY_LIBRARY
-        NAMES ${TIDY_NAMES}
-        PATH_SUFFIXES lib
-    )
+    if (USE_TIDY_STATIC)
+      # search for the static  
+      find_library(TIDY_LIBRARY
+          NAMES tidys
+          PATH_SUFFIXES lib
+          )
+    endif ()
+    if (NOT TIDY_LIBRARY)
+      # search for the shared  
+      find_library(TIDY_LIBRARY
+          NAMES ${TIDY_NAMES}
+          PATH_SUFFIXES lib
+          )
+    endif ()
 endif ()
 ###mark_as_advanced(TIDY_LIBRARY TIDY_INCLUDE_DIR)
 

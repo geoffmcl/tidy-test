@@ -47,6 +47,7 @@ endif ()
 
 # Option to test libtidy-0.99, libtidy-5.0.0, ... compatibility - should FAIL with 5.5.5 onwards
 option( USE_TIDY5_API "Set ON to test backward compatibility to libtidy-0.99, 5.0.0, onwards." OFF )
+option( USE_TIDY_STATIC "Set OFF to only search for shared library" ON )
 
 add_definitions( -DTIDY_TEST )
 add_definitions( -DTT_VERSION="${TT_MAJOR}.${TT_MINOR}.${TT_POINT}" )
@@ -78,23 +79,15 @@ if(WIN32 AND MSVC)
 else()
     # items for unix
     set(WARNING_FLAGS "${WARNING_FLAGS} -Wno-unused-but-set-variable -Wno-unused-variable -Wno-switch")
+     option(ADD_ASAN_LIB "Set to yes to put 'asan' link first" NO)
+     if (ADD_ASAN_LIB)
+        list( APPEND add_LIBS asan )
+     endif ()   
 endif()
 
 set( CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${WARNING_FLAGS} ${MSVC_FLAGS} -D_REENTRANT" )
 set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${WARNING_FLAGS} ${MSVC_FLAGS} -D_REENTRANT" )
 set( CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${MSVC_LD_FLAGS}" )
-
-#  TIDY_FOUND          - True if tidy found.
-#  TIDY_INCLUDE_DIRS   - where to find tidy.h, etc.
-#  TIDY_LIBRARIES      - List of libraries when using tidy.
-find_package( Tidy )
-if (TIDY_FOUND)
-    message(STATUS "*** Tidy found inc ${TIDY_INCLUDE_DIRS} lib ${TIDY_LIBRARIES}")
-    include_directories( ${TIDY_INCLUDE_DIRS} )
-    list(APPEND add_LIBS ${TIDY_LIBRARIES})
-else ()
-    message(FATAL_ERROR "*** Tidy NOT found! Maybe set ENV TIDY_ROOT to install location")
-endif ()
 
 #  CURL_FOUND          - True if curl found.
 #  CURL_INCLUDE_DIRS   - where to find curl/curl.h, etc.
@@ -143,7 +136,19 @@ else()
    message(STATUS "*** Using current Tidy API - no locale test")
 endif()
 
-# Total libs 0, exes 1
+#  TIDY_FOUND          - True if tidy found.
+#  TIDY_INCLUDE_DIRS   - where to find tidy.h, etc.
+#  TIDY_LIBRARIES      - List of libraries when using tidy.
+find_package( Tidy )
+if (TIDY_FOUND)
+    message(STATUS "*** Tidy found inc ${TIDY_INCLUDE_DIRS} lib ${TIDY_LIBRARIES}")
+    include_directories( ${TIDY_INCLUDE_DIRS} )
+    list(APPEND add_LIBS ${TIDY_LIBRARIES})
+else ()
+    message(FATAL_ERROR "*** Tidy NOT found! Maybe set ENV TIDY_ROOT to install location")
+endif ()
+
+# Total libs 1, exes ?
 #################################################
 ##### LIBRARIES 1 #####
 #################################################
