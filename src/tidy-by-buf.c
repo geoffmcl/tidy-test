@@ -74,6 +74,10 @@ void give_help( char *name )
     printf(" --help  (-h or -?) = This this help, and exit(0)\n");
     printf(" --version          = Show version, and exit(0)\n");
     printf(" --Verb[n]     (-V) = Bump, or set verbosity. 0,1,2,5,9 (def=%d)\n", verbosity);
+    printf(" --out <file>  (-o) = Output html to this file. (def=%s)\n", 
+        (htm_fil ? htm_fil : "none"));
+    printf(" --file <file> (-f) = Output non-html to this file. (def=%s)\n",
+        (err_fil ? err_fil : "none"));
     // TODO: More help
 }
 
@@ -159,19 +163,51 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
     rc = run_tidy_parser(&data_buffer, &output_buffer, &error_buffer);
 
     /* don't spray noise, unless requested */
-    if (VERB1)
+    if (VERB5 || err_fil)
     {
         if (error_buffer.bp && (error_buffer.size > 0))
         {
+            int isfile = 0;
+            if (err_fil)
+            {
+                errout = fopen(err_fil, "wb");
+                if (errout)
+                    isfile = 1;
+            }
             if (!errout)
                 errout = stderr;
             fw = fwrite(error_buffer.bp, error_buffer.size, 1, errout);
+            if (isfile) {
+                fclose(errout);
+                if (VERB1) {
+                    printf("%s: error output, %u, written to '%s' %s\n", module,
+                        error_buffer.size, err_fil,
+                        (error_buffer.size == (uint)fw) ? "ok" : "FAILED");
+                }
+            }
         }
+    }
+    if (VERB5 || htm_fil)
+    {
         if (output_buffer.bp && output_buffer.size > 0)
         {
+            int isfilo = 0;
+            if (htm_fil) {
+                htmout = fopen(htm_fil, "wb");
+                if (htmout)
+                    isfilo = 1;
+            }
             if (!htmout)
                 htmout = stdout;
             fw = fwrite(output_buffer.bp, output_buffer.size, 1, htmout);
+            if (isfilo) {
+                fclose(htmout);
+                if (VERB1) {
+                    printf("%s: html output, %u, written to '%s' %s\n", module,
+                        output_buffer.size, htm_fil,
+                        (output_buffer.size == (uint)fw) ? "ok" : "FAILED");
+                }
+            }
         }
     }
     /* CLEAN UP buffers */
@@ -219,7 +255,28 @@ int parse_args( int argc, char **argv )
                     }
                 }
                 break;
-                // TODO: Other arguments
+            case 'f':
+                if (i2 < argc) {
+                    i++;
+                    sarg = argv[i];
+                    err_fil = strdup(sarg);
+                }
+                else {
+                    printf("%s: Expected file name to follow '%s'!\n", module, arg);
+                    return 1;
+                }
+                break;
+            case 'o':
+                if (i2 < argc) {
+                    i++;
+                    sarg = argv[i];
+                    htm_fil = strdup(sarg);
+                }
+                else {
+                    printf("%s: Expected file name to follow '%s'!\n", module, arg);
+                    return 1;
+                }
+                break;
             default:
                 printf("%s: Unknown argument '%s'. Try -? for help...\n", module, arg);
                 return 1;
@@ -297,8 +354,13 @@ int main( int argc, char **argv )
 
     iret = tidy_by_buffer(); // actions of app
 
+    /* clean up potential 'strdup' allocations */
     if (usr_input)
         free((char *)usr_input);
+    if (htm_fil)
+        free((char *)htm_fil);
+    if (err_fil)
+        free((char *)err_fil);
 
     return iret;
 }
