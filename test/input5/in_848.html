@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta name="generator" content=
+  "HTML Tidy for HTML5 for Windows version 5.7.28.I848">
+  <meta charset="utf-8">
+  <title>Is. #848 slot</title>
+  <script>
+  function prtTable() {
+
+    if('attachShadow' in document.createElement('div')) {
+      let templateContent = document.querySelector('template').content;
+      let divs = document.querySelectorAll('div');
+     
+      divs.forEach(function(div){
+        div.attachShadow({  mode: 'open' }).appendChild(
+            templateContent.cloneNode(true))
+      });
+    }
+    else
+    {    
+      console.warn('attachShadow not supported');
+    }
+  }
+  </script>
+</head>
+<body>
+  <template>
+    <table>
+      <tr>
+        <th>
+          <slot name='title-1'></slot>
+        </th>
+        <th>
+          <slot name='title-2'></slot>
+        </th>
+      </tr>
+      <tr>
+        <td>
+          <slot name='value-1.1'></slot>
+        </td>
+        <td>
+          <slot name='value-1.2'></slot>
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <slot name='value-2.1'></slot>
+        </td>
+        <td>
+          <slot name='value-2.2'></slot>
+        </td>
+      </tr>
+    </table>
+    <style>
+    table {
+        table-layout: fixed;
+        border-collapse: collapse;
+        margin-bottom: 10px;
+    }
+    th {
+        width: 300px;
+    }
+    th,
+    td {
+        border: 1px solid;
+    }
+    </style>
+  </template>
+  <div>
+    <span slot='title-1'>Title A</span> <span slot='title-2'>Title
+    B</span> <span slot='value-1.1'>Value A.1</span> <span slot=
+    'value-1.2'>Value A.2</span> <span slot='value-2.1'>Value
+    B.1</span> <span slot='value-2.2'>Value B.2</span>
+  </div>
+  <div>
+    <span slot='title-1'>Title C</span> <span slot='title-2'>Title
+    D</span> <span slot='value-1.1'>Value C.1</span> <span slot=
+    'value-1.2'>Value C.2</span> <span slot='value-2.1'>Value
+    D.1</span> <span slot='value-2.2'>Value D.2</span>
+  </div>
+  <script>
+  prtTable();
+  </script>
+</body>
+</html>
