@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>add 'slot' tag</title>
+</head>
+<body>
+<p><slot name="my-text">My default text</slot></p>
+<my-paragraph><span slot="my-text">Let's have some different
+text!</span></my-paragraph>
+<my-paragraph>
+<ul slot="my-text">
+<li>Let's have some different text!</li>
+<li>In a list!</li>
+</ul>
+</my-paragraph>
+</body>
+</html>
