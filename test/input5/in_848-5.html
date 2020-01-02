@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>848-5</title>
+</head>
+<body>
+<section>  <!-- this is Sectioning content, that has a Flow content model -->
+  <slot>...</slot> <!-- this now has a Flow content model, so ParseBlock is more correct -->
+  <p>  <!-- this is Flow content, that has a Phrasing content model -->
+    <slot>...</slot> <!-- this now has a Phrasing content model, so ParseInline is more correct -->
+  </p>
+</section>
+</body>
+</html>
+
