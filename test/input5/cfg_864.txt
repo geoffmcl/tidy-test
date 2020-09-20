@@ -1,0 +1,7 @@
+input-xml: yes
+output-xml: yes
+indent: yes
+quiet: yes
+indent-attributes: yes
+indent-spaces: 4
+literal-attributes: yes
