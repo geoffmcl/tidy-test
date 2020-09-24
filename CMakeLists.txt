@@ -75,7 +75,7 @@ if(WIN32 AND MSVC)
     # to distinguish between debug and release libs
     set( CMAKE_DEBUG_POSTFIX "d" )
     # list(APPEND extra_LIBS Psapi Shlwapi Dnsapi odbc32 odbccp32)
-    list(APPEND extra_LIBS Ws2_32 Winmm)
+    list(APPEND extra_LIBS Ws2_32 Winmm crypt32 Wldap32)
 else()
     # items for unix
     set(WARNING_FLAGS "${WARNING_FLAGS} -Wno-unused-but-set-variable -Wno-unused-variable -Wno-switch")
