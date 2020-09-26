@@ -1,0 +1,3 @@
+tidy-mark:    no
+clean:        yes
+word-2000:    yes
