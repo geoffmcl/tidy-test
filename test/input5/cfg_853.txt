@@ -1,0 +1,12 @@
+// Tidy XHTML config file
+// http://api.html-tidy.org/tidy/tidylib_api_5.4.0/tidy_quickref.html
+//
+input-encoding: utf8
+output-xhtml: yes
+output-encoding: utf8
+force-output: yes
+doctype: omit
+bare: yes
+word-2000: yes
+tidy-mark: no
+add-meta-charset: yes
