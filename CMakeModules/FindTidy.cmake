@@ -12,7 +12,7 @@
 # 20180118 - Remove 'tidy5' name, AND 'include/tidy' subdirectory
 #
 
-set(_TIDY_SEARCHES ${CMAKE_INSTALL_PREFIX})
+#set(_TIDY_SEARCHES ${CMAKE_INSTALL_PREFIX})
 
 # Search TIDY_ROOT first if it is set.
 if (TIDY_ROOT)

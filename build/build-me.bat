@@ -20,7 +20,8 @@
 @REM ###########################################
 @REM NOTE: Specific install location
 @REM ###########################################
-@set TMPINST=%TMP3RD%
+@rem set TMPINST=%TMP3RD%
+@set TMPINST=D:\Projects\install\MSVC140-64
 @REM ###########################################
 
 @REM Nothing below need be touched..
@@ -30,8 +31,13 @@
 @if NOT EXIST %TMPSRC%\CMakeLists.txt goto NOSRC2
 
 @if NOT EXIST %TMP3RD%\nul goto NO3RD
+
+@set TMPTIDY=D:\Projects\install\MSVC140-64\tidy-5.7.29.I884
+@if NOT EXIST %TMPTIDY%\include\tidy.h goto NOTIDY
+
 @set TMPOPTS=-DCMAKE_INSTALL_PREFIX=%TMPINST%
 @REM set TMPOPTS=%TMPOPTS% -DCMAKE_PREFIX_PATH:PATH=%TMP3RD%
+@set TMPOPTS=%TMPOPTS% -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON
 
 :RPT
 @if "%~1x" == "x" goto GOTCMD
@@ -43,6 +49,8 @@
 @echo Building %TMPPRJ% begin %DATE% %TMPBGN% > %TMPLOG%
 @echo All output to %TMPLOG%...
 
+@set TIDY_ROOT=%TMPTIDY%
+@echo Set ENV TIDY_ROOT=%TIDY_ROOT% >> %TMPLOG%
 @REM echo Set ENV BOOST_ROOT=%BOOST_ROOT% >> %TMPLOG%
 
 @echo Doing 'cmake %TMPSRC% %TMPOPTS%' out to %TMPLOG%
@@ -127,7 +135,11 @@
 @goto ISERR
 
 :NO3RD
-@echo Erro: No directory %TMP3RD% found!
+@echo Error: No directory %TMP3RD% found!
+@goto ISERR
+
+:NOTIDY
+@echo Error: No directory %TMPTIDY% found!
 @goto ISERR
 
 :NOBOOST

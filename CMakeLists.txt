@@ -89,6 +89,18 @@ set( CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${WARNING_FLAGS} ${MSVC_FLAGS} -D_REENTRANT
 set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${WARNING_FLAGS} ${MSVC_FLAGS} -D_REENTRANT" )
 set( CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${MSVC_LD_FLAGS}" )
 
+#  TIDY_FOUND          - True if tidy found.
+#  TIDY_INCLUDE_DIRS   - where to find tidy.h, etc.
+#  TIDY_LIBRARIES      - List of libraries when using tidy.
+find_package( Tidy )
+if (TIDY_FOUND)
+    message(STATUS "*** Tidy found inc ${TIDY_INCLUDE_DIRS} lib ${TIDY_LIBRARIES}")
+    include_directories( ${TIDY_INCLUDE_DIRS} )
+    list(APPEND add_LIBS ${TIDY_LIBRARIES})
+else ()
+    message(FATAL_ERROR "*** Tidy NOT found! Maybe set ENV TIDY_ROOT to install location")
+endif ()
+
 #  CURL_FOUND          - True if curl found.
 #  CURL_INCLUDE_DIRS   - where to find curl/curl.h, etc.
 #  CURL_LIBRARIES      - List of libraries when using curl.
@@ -135,18 +147,6 @@ if (USE_TIDY5_API)
 else()
    message(STATUS "*** Using current Tidy API - no locale test")
 endif()
-
-#  TIDY_FOUND          - True if tidy found.
-#  TIDY_INCLUDE_DIRS   - where to find tidy.h, etc.
-#  TIDY_LIBRARIES      - List of libraries when using tidy.
-find_package( Tidy )
-if (TIDY_FOUND)
-    message(STATUS "*** Tidy found inc ${TIDY_INCLUDE_DIRS} lib ${TIDY_LIBRARIES}")
-    include_directories( ${TIDY_INCLUDE_DIRS} )
-    list(APPEND add_LIBS ${TIDY_LIBRARIES})
-else ()
-    message(FATAL_ERROR "*** Tidy NOT found! Maybe set ENV TIDY_ROOT to install location")
-endif ()
 
 # Total libs 1, exes ?
 #################################################
