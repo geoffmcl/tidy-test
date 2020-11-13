@@ -1,0 +1,5 @@
+# Issue 855 config
+new-inline-tags: st1:city,st1:place
+indent: auto
+quiet: yes
+# not needed - word-2000: yes
