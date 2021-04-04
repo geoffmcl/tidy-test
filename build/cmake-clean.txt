@@ -17,4 +17,6 @@ tidy-locale
 tidy-buf-test
 tab2spaces
 sample2
+poc-884
+tidy-by-buf
 
